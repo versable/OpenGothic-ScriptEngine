@@ -328,6 +328,7 @@ class Npc final {
     const std::shared_ptr<zenkit::INpc>& handlePtr() const { return hnpc; }
 
     auto      inventory() const -> const Inventory& { return invent; }
+    auto      inventory()       ->       Inventory& { return invent; }
     size_t    itemCount  (size_t id) const;
     Item*     activeWeapon();
     Item*     getItem    (size_t id);

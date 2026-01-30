@@ -170,6 +170,10 @@ class Gothic final {
     Tempest::Signal<void(Npc&,Npc&,AiOuputPipe*&)>                      onDialogPipe;
     std::function<bool(const Npc*)>                                     isNpcInDialogFn;
 
+    // Lua scripting hooks - return true to skip default behavior
+    std::function<bool(Npc&, Interactive&)>                             onOpen;
+    std::function<bool(Npc&, Npc&)>                                     onRansack;
+
     Tempest::Signal<void(std::string_view,int,int,int,const GthFont&)>  onPrintScreen;
     Tempest::Signal<void(std::string_view)>                             onPrint;
     Tempest::Signal<void(std::string_view)>                             onVideo;

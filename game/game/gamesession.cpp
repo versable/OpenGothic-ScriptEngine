@@ -77,6 +77,7 @@ GameSession::GameSession(std::string file) {
   vm.reset(new GameScript(*this));
   luaVm.reset(new ScriptEngine());
   luaVm->initialize();
+  luaVm->loadModScripts();
   initPerceptions();
 
   setWorld(std::unique_ptr<World>(new World(*this,std::move(file),true,[&](int v){
@@ -144,6 +145,7 @@ GameSession::GameSession(Serialize &fin) {
   vm.reset(new GameScript(*this));
   luaVm.reset(new ScriptEngine());
   luaVm->initialize();
+  luaVm->loadModScripts();
   vm->initDialogs();
 
   if(true) {

@@ -306,8 +306,11 @@ bool PlayerControl::interact(Interactive &it) {
     return true;
   if(!canInteract())
     return false;
-  if(it.isContainer()){
-    inv.open(*pl,it);
+  if(it.isContainer()) {
+    auto& hook = Gothic::inst().onOpen;
+    if(hook && hook(*pl, it))
+      return true;
+    inv.open(*pl, it);
     return true;
     }
   if(pl->setInteraction(&it)){
@@ -328,7 +331,10 @@ bool PlayerControl::interact(Npc &other) {
   if(!canInteract())
     return false;
   if(w->script().isDead(other) || w->script().isUnconscious(other)) {
-    if(!inv.ransack(*w->player(),other))
+    auto& hook = Gothic::inst().onRansack;
+    if(hook && hook(*pl, other))
+      return true;
+    if(!inv.ransack(*w->player(), other))
       w->script().printNothingToGet();
     }
   if((pl->bodyStateMasked()&BS_MAX)!=BS_NONE)

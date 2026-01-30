@@ -8,6 +8,18 @@
 #include <Luau/Compiler.h>
 #include <Luau/CodeGen.h>
 
+#include "world/objects/npc.h"
+#include "world/objects/item.h"
+#include "world/objects/interactive.h"
+#include "world/world.h"
+#include "game/inventory.h"
+#include "commandline.h"
+#include "utils/fileutil.h"
+#include "gothic.h"
+
+#include <Tempest/Dir>
+#include <Tempest/TextCodec>
+
 #include <fstream>
 #include <sstream>
 
@@ -31,11 +43,13 @@ void ScriptEngine::initialize() {
   setupSandbox();
   registerCoreFunctions();
   enableJIT();
+  bindHooks();
 
   Log::i("[ScriptEngine] Initialized");
   }
 
 void ScriptEngine::shutdown() {
+  unbindHooks();
   if(L) {
     lua_close(L);
     L = nullptr;
@@ -118,14 +132,20 @@ void ScriptEngine::registerCoreFunctions() {
   lua_pushcfunction(L, luaPrint, "print");
   lua_setglobal(L, "print");
 
+  // Create opengothic table
   lua_newtable(L);
 
+  // opengothic.core
   lua_newtable(L);
   lua_pushstring(L, "0.1.0");
   lua_setfield(L, -2, "VERSION");
   lua_setfield(L, -2, "core");
 
   lua_setglobal(L, "opengothic");
+
+  // Register internal API and load bootstrap
+  registerInternalAPI();
+  loadBootstrap();
   }
 
 void ScriptEngine::enableJIT() {
@@ -320,12 +340,6 @@ void ScriptEngine::deserialize(const ScriptData& data) {
   (void)data;
   }
 
-void ScriptEngine::fireEvent(const std::string& eventName, const std::vector<void*>& args) {
-  // TODO: implement event system
-  (void)eventName;
-  (void)args;
-  }
-
 std::vector<std::string> ScriptEngine::getLoadedScripts() const {
   std::vector<std::string> scripts;
   for(const auto& info : loadedScripts)
@@ -344,4 +358,249 @@ void ScriptEngine::reloadAllScripts() {
 
   for(const auto& path : paths)
     loadGlobalScript(path);
+  }
+
+void ScriptEngine::loadModScripts() {
+  using namespace Tempest;
+
+  auto scriptsDir = CommandLine::inst().nestedPath({u"Data", u"opengothic", u"scripts"}, Dir::FT_Dir);
+  if(scriptsDir.empty()) {
+    Log::i("[ScriptEngine] No scripts directory found at Data/opengothic/scripts/");
+    return;
+    }
+
+  std::vector<std::u16string> scripts;
+  Dir::scan(scriptsDir, [&scripts, &scriptsDir](const std::u16string& name, Dir::FileType type) {
+    if(type == Dir::FT_File) {
+      if(name.size() > 4 && name.substr(name.size() - 4) == u".lua") {
+        scripts.push_back(scriptsDir + name);
+        }
+      }
+    return false;
+    });
+
+  if(scripts.empty()) {
+    Log::i("[ScriptEngine] No .lua scripts found in Data/opengothic/scripts/");
+    return;
+    }
+
+  Log::i("[ScriptEngine] Found ", scripts.size(), " script(s) to load");
+
+  for(const auto& script : scripts) {
+    auto path = TextCodec::toUtf8(script);
+    loadGlobalScript(path);
+    }
+  }
+
+// --- Internal API (low-level, _ prefixed) ---
+
+int ScriptEngine::luaInventoryGetItems(lua_State* L) {
+  auto* inv = static_cast<Inventory*>(lua_touserdata(L, 1));
+  if(!inv) {
+    lua_newtable(L);
+    return 1;
+    }
+
+  lua_newtable(L);
+  int idx = 1;
+  for(auto it = inv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
+    lua_newtable(L);
+
+    lua_pushinteger(L, int(it->clsId()));
+    lua_setfield(L, -2, "id");
+
+    auto name = it->displayName();
+    lua_pushlstring(L, name.data(), name.size());
+    lua_setfield(L, -2, "name");
+
+    lua_pushinteger(L, int(it.count()));
+    lua_setfield(L, -2, "count");
+
+    lua_pushboolean(L, it.isEquipped());
+    lua_setfield(L, -2, "equipped");
+
+    lua_rawseti(L, -2, idx++);
+    }
+  return 1;
+  }
+
+int ScriptEngine::luaInventoryTransferAll(lua_State* L) {
+  auto* srcInv = static_cast<Inventory*>(lua_touserdata(L, 1));
+  auto* dstInv = static_cast<Inventory*>(lua_touserdata(L, 2));
+  auto* world  = static_cast<World*>(lua_touserdata(L, 3));
+
+  if(!srcInv || !dstInv || !world) {
+    lua_pushinteger(L, 0);
+    return 1;
+    }
+
+  // Collect non-equipped items to avoid iterator invalidation
+  std::vector<std::pair<size_t, size_t>> items;
+  for(auto it = srcInv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
+    if(!it.isEquipped())
+      items.emplace_back(it->clsId(), it.count());
+    }
+
+  for(auto& [id, count] : items)
+    Inventory::transfer(*dstInv, *srcInv, nullptr, id, count, *world);
+
+  lua_pushinteger(L, int(items.size()));
+  return 1;
+  }
+
+void ScriptEngine::registerInternalAPI() {
+  if(!L)
+    return;
+
+  lua_getglobal(L, "opengothic");
+
+  lua_pushcfunction(L, luaInventoryGetItems, "_inventoryGetItems");
+  lua_setfield(L, -2, "_inventoryGetItems");
+
+  lua_pushcfunction(L, luaInventoryTransferAll, "_inventoryTransferAll");
+  lua_setfield(L, -2, "_inventoryTransferAll");
+
+  lua_pop(L, 1);
+  }
+
+bool ScriptEngine::executeBootstrapCode(const char* code, const char* name) {
+  std::string bytecode;
+  if(!compileScript(code, bytecode)) {
+    Log::e("[ScriptEngine] Failed to compile bootstrap: ", name);
+    return false;
+    }
+
+  if(luau_load(L, name, bytecode.data(), bytecode.size(), 0) != 0) {
+    Log::e("[ScriptEngine] Bootstrap load error: ", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    return false;
+    }
+
+  if(lua_pcall(L, 0, 0, 0) != 0) {
+    Log::e("[ScriptEngine] Bootstrap runtime error: ", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    return false;
+    }
+
+  return true;
+  }
+
+void ScriptEngine::loadBootstrap() {
+  const char* bootstrap = R"lua(
+-- Inventory class (wraps C++ Inventory handle)
+local Inventory = {}
+Inventory.__index = Inventory
+
+function Inventory.new(handle, worldHandle)
+    return setmetatable({
+        _handle = handle,
+        _world = worldHandle
+    }, Inventory)
+end
+
+function Inventory:items()
+    return opengothic._inventoryGetItems(self._handle)
+end
+
+function Inventory:transferAllTo(target)
+    return opengothic._inventoryTransferAll(self._handle, target._handle, self._world)
+end
+
+function Inventory:hasItems()
+    local items = self:items()
+    for _, item in ipairs(items) do
+        if not item.equipped then
+            return true
+        end
+    end
+    return false
+end
+
+-- Event system
+opengothic.events = {
+    _handlers = {}
+}
+
+function opengothic.events.register(eventName, callback)
+    if not opengothic.events._handlers[eventName] then
+        opengothic.events._handlers[eventName] = {}
+    end
+    table.insert(opengothic.events._handlers[eventName], callback)
+end
+
+-- Called from C++ to dispatch events
+function opengothic._dispatchEvent(eventName, playerInvHandle, targetInvHandle, worldHandle)
+    local handlers = opengothic.events._handlers[eventName]
+    if not handlers then
+        return false
+    end
+
+    local playerInv = Inventory.new(playerInvHandle, worldHandle)
+    local targetInv = Inventory.new(targetInvHandle, worldHandle)
+
+    for _, handler in ipairs(handlers) do
+        local handled = handler(playerInv, targetInv)
+        if handled then
+            return true
+        end
+    end
+    return false
+end
+
+-- Export Inventory class
+opengothic.Inventory = Inventory
+)lua";
+
+  if(!executeBootstrapCode(bootstrap, "bootstrap"))
+    Log::e("[ScriptEngine] Failed to load bootstrap code");
+  }
+
+bool ScriptEngine::dispatchEvent(const char* eventName, std::initializer_list<void*> handles) {
+  if(!L)
+    return false;
+
+  lua_getglobal(L, "opengothic");
+  if(!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    return false;
+    }
+
+  lua_getfield(L, -1, "_dispatchEvent");
+  if(!lua_isfunction(L, -1)) {
+    lua_pop(L, 2);
+    return false;
+    }
+
+  lua_pushstring(L, eventName);
+
+  for(void* handle : handles)
+    lua_pushlightuserdata(L, handle);
+
+  int nargs = 1 + int(handles.size());
+  if(lua_pcall(L, nargs, 1, 0) != 0) {
+    Log::e("[ScriptEngine] Event dispatch error: ", lua_tostring(L, -1));
+    lua_pop(L, 2);
+    return false;
+    }
+
+  bool handled = lua_toboolean(L, -1);
+  lua_pop(L, 2);
+  return handled;
+  }
+
+void ScriptEngine::bindHooks() {
+  Gothic::inst().onOpen = [this](Npc& player, Interactive& container) {
+    return dispatchEvent("onOpen",
+        {&player.inventory(), &container.inventory(), &player.world()});
+    };
+
+  Gothic::inst().onRansack = [this](Npc& player, Npc& target) {
+    return dispatchEvent("onRansack",
+        {&player.inventory(), &target.inventory(), &player.world()});
+    };
+  }
+
+void ScriptEngine::unbindHooks() {
+  Gothic::inst().onOpen    = nullptr;
+  Gothic::inst().onRansack = nullptr;
   }

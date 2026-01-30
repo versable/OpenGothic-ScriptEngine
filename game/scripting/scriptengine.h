@@ -8,6 +8,11 @@
 
 struct lua_State;
 
+class Npc;
+class Interactive;
+class Inventory;
+class World;
+
 class ScriptEngine final {
   public:
     ScriptEngine();
@@ -29,13 +34,15 @@ class ScriptEngine final {
     ScriptData serialize() const;
     void deserialize(const ScriptData& data);
 
-    using EventCallback = std::function<void(lua_State*)>;
-    void fireEvent(const std::string& eventName, const std::vector<void*>& args);
-
     std::vector<std::string> getLoadedScripts() const;
     void reloadAllScripts();
+    void loadModScripts();
+    void bindHooks();
+    void unbindHooks();
 
   private:
+    // Fire event via Lua dispatcher - returns true if handled
+    bool dispatchEvent(const char* eventName, std::initializer_list<void*> handles);
     struct ScriptInfo {
       std::string filepath;
       std::string source;
@@ -49,8 +56,13 @@ class ScriptEngine final {
 
     void setupSandbox();
     void registerCoreFunctions();
+    void registerInternalAPI();
+    void loadBootstrap();
     void enableJIT();
     bool compileScript(const std::string& source, std::string& outBytecode);
+    bool executeBootstrapCode(const char* code, const char* name);
 
     static int luaPrint(lua_State* L);
+    static int luaInventoryGetItems(lua_State* L);
+    static int luaInventoryTransferAll(lua_State* L);
   };
