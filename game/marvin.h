@@ -63,6 +63,11 @@ class Marvin {
       C_ToggleGI,
       C_ToggleVsm,
       C_ToggleRtsm,
+
+      // luau scripting
+      C_Lua,
+      C_LuaReload,
+      C_LuaList,
       };
 
     struct Cmd {

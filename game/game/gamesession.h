@@ -19,6 +19,7 @@ class VisualFx;
 class WorldStateStorage;
 class VersionInfo;
 class GthFont;
+class ScriptEngine;
 
 class GameSession final {
   public:
@@ -44,6 +45,7 @@ class GameSession final {
 
     WorldView*   view()   const;
     GameScript*  script() const { return vm.get(); }
+    ScriptEngine* luaScript() const { return luaVm.get(); }
 
     Camera&      camera()       { return     *cam; }
 
@@ -95,6 +97,7 @@ class GameSession final {
 
     std::unique_ptr<Camera>        cam;
     std::unique_ptr<GameScript>    vm;
+    std::unique_ptr<ScriptEngine>  luaVm;
     std::unique_ptr<World>         wrld;
 
     uint64_t                       ticks = 0, wrldTimePart = 0;

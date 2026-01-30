@@ -8,6 +8,8 @@
 #include "world/objects/npc.h"
 #include "world/objects/item.h"
 #include "world/triggers/abstracttrigger.h"
+#include "game/gamesession.h"
+#include "scripting/scriptengine.h"
 #include "camera.h"
 #include "gothic.h"
 
@@ -148,6 +150,10 @@ Marvin::Marvin() {
     {"toggle gi",                  C_ToggleGI},
     {"toggle vsm",                 C_ToggleVsm},
     {"toggle rtsm",                C_ToggleRtsm},
+
+    // luau scripting
+    {"reloadlua",                  C_LuaReload},
+    {"listlua",                    C_LuaList},
     };
   }
 
@@ -253,6 +259,18 @@ bool Marvin::autoComplete(std::string& v) {
   }
 
 bool Marvin::exec(std::string_view v) {
+  // Handle lua command specially - capture entire rest of line
+  if(v.size() > 4 && v.substr(0, 4) == "lua ") {
+    auto* g = Gothic::inst().gameSession();
+    if(g == nullptr || g->luaScript() == nullptr)
+      return false;
+    auto code = std::string(v.substr(4));
+    auto result = g->luaScript()->executeString(code);
+    if(!result.empty())
+      print(result);
+    return true;
+    }
+
   auto ret = recognize(v);
   switch(ret.cmd.type) {
     case C_None:
@@ -463,6 +481,32 @@ bool Marvin::exec(std::string_view v) {
     case C_ToggleRtsm:
       Gothic::inst().toggleRtsm();
       return true;
+
+    case C_Lua:
+      // Handled specially before recognize() to capture full line
+      return false;
+    case C_LuaReload: {
+      auto* g = Gothic::inst().gameSession();
+      if(g==nullptr || g->luaScript()==nullptr)
+        return false;
+      g->luaScript()->reloadAllScripts();
+      print("Lua scripts reloaded");
+      return true;
+      }
+    case C_LuaList: {
+      auto* g = Gothic::inst().gameSession();
+      if(g==nullptr || g->luaScript()==nullptr)
+        return false;
+      auto scripts = g->luaScript()->getLoadedScripts();
+      if(scripts.empty()) {
+        print("No Lua scripts loaded");
+        } else {
+        print("Loaded Lua scripts:");
+        for(const auto& s : scripts)
+          print(string_frm("  ", s));
+        }
+      return true;
+      }
     }
 
   return true;
