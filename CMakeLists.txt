@@ -168,6 +168,15 @@ endif()
 include_directories(lib/bullet3/src)
 target_link_libraries(${PROJECT_NAME} BulletDynamics BulletCollision LinearMath)
 
+# Luau scripting engine
+set(LUAU_BUILD_CLI OFF CACHE BOOL "Build Luau CLI" FORCE)
+set(LUAU_BUILD_TESTS OFF CACHE BOOL "Build Luau tests" FORCE)
+# TODO: Evaluate usefulness
+# set(LUAU_BUILD_WEB OFF CACHE BOOL "Build Luau web" FORCE)
+
+add_subdirectory(lib/luau)
+target_link_libraries(${PROJECT_NAME} Luau.Compiler Luau.VM Luau.CodeGen)
+
 # script for launching in binary directory
 if(WIN32)
     add_custom_command(
