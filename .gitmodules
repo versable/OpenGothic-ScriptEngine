@@ -13,3 +13,6 @@
 [submodule "lib/dmusic"]
 	path = lib/dmusic
 	url = https://github.com/GothicKit/dmusic.git
+[submodule "lib/luau"]
+	path = lib/luau
+	url = https://github.com/luau-lang/luau.git
