@@ -23,6 +23,49 @@
 #include <fstream>
 #include <sstream>
 
+namespace Lua {
+  template<typename T>
+  T** push(lua_State* L, T* obj) {
+    T** ptr = reinterpret_cast<T**>(lua_newuserdata(L, sizeof(T*)));
+    *ptr = obj;
+    return ptr;
+    }
+
+  void setMetatable(lua_State* L, const char* name) {
+    luaL_getmetatable(L, name);
+    lua_setmetatable(L, -2);
+    }
+
+  template<typename T>
+  T* to(lua_State* L, int idx) {
+    return *reinterpret_cast<T**>(lua_touserdata(L, idx));
+    }
+
+  template<typename T>
+  T* check(lua_State* L, int idx, const char* name) {
+    return *reinterpret_cast<T**>(luaL_checkudata(L, idx, name));
+    }
+
+  void registerClass(lua_State* L, const luaL_Reg* methods, const char* name, const luaL_Reg* globalApi) {
+    luaL_newmetatable(L, name);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+    for (const luaL_Reg* l = methods; l->name != nullptr; l++) {
+      lua_pushcfunction(L, l->func, l->name);
+      lua_setfield(L, -2, l->name);
+      }
+
+    if(globalApi!=nullptr) {
+      lua_getglobal(L, "opengothic");
+      lua_pushvalue(L, -2);
+      lua_setfield(L, -2, name);
+      lua_pop(L, 1);
+      }
+
+    lua_pop(L,1);
+    }
+  }
+
 using namespace Tempest;
 
 ScriptEngine::ScriptEngine() {
@@ -401,12 +444,12 @@ int ScriptEngine::luaPrintMessage(lua_State* L) {
   }
 
 int ScriptEngine::luaInventoryGetItems(lua_State* L) {
-  auto* inv = static_cast<Inventory*>(lua_touserdata(L, 1));
+  auto* inv = Lua::check<Inventory>(L, 1, "Inventory");
   if(!inv) {
     lua_newtable(L);
     return 1;
     }
-
+  
   lua_newtable(L);
   int idx = 1;
   for(auto it = inv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
@@ -430,59 +473,116 @@ int ScriptEngine::luaInventoryGetItems(lua_State* L) {
   return 1;
   }
 
-int ScriptEngine::luaInventoryTransferAll(lua_State* L) {
-  auto* srcInv = static_cast<Inventory*>(lua_touserdata(L, 1));
-  auto* dstInv = static_cast<Inventory*>(lua_touserdata(L, 2));
-  auto* world  = static_cast<World*>(lua_touserdata(L, 3));
+int ScriptEngine::luaInventoryTransfer(lua_State* L) {
+  auto* dstInv = Lua::check<Inventory>(L, 1, "Inventory");
+  auto* srcInv = Lua::check<Inventory>(L, 2, "Inventory");
+  int   itemId = luaL_checkinteger(L, 3);
+  int   count  = luaL_checkinteger(L, 4);
+  auto* world  = Lua::check<World>(L, 5, "World");
 
-  if(!srcInv || !dstInv || !world) {
-    lua_newtable(L);
+  if(!dstInv || !srcInv || !world || itemId < 0 || count <= 0) {
+    lua_pushboolean(L, false);
     return 1;
     }
 
-  // Collect non-equipped items with names to avoid iterator invalidation
-  struct ItemInfo {
-    size_t      id;
-    size_t      count;
-    std::string name;
-    };
-  std::vector<ItemInfo> items;
-  for(auto it = srcInv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
-    if(!it.isEquipped())
-      items.push_back({it->clsId(), it.count(), std::string(it->displayName())});
-    }
-
-  for(auto& item : items)
-    Inventory::transfer(*dstInv, *srcInv, nullptr, item.id, item.count, *world);
-
-  // Return table of transferred items
-  lua_newtable(L);
-  int idx = 1;
-  for(auto& item : items) {
-    lua_newtable(L);
-    lua_pushstring(L, item.name.c_str());
-    lua_setfield(L, -2, "name");
-    lua_pushinteger(L, int(item.count));
-    lua_setfield(L, -2, "count");
-    lua_rawseti(L, -2, idx++);
-    }
+  Inventory::transfer(*dstInv, *srcInv, nullptr, size_t(itemId), size_t(count), *world);
+  lua_pushboolean(L, true);
   return 1;
   }
 
-void ScriptEngine::registerInternalAPI() {
-  if(!L)
-    return;
+int ScriptEngine::luaInventoryItemCount(lua_State* L) {
+  auto* inv = Lua::check<Inventory>(L, 1, "Inventory");
+  int itemId = luaL_checkinteger(L, 2);
+
+  if(!inv || itemId < 0) {
+    lua_pushinteger(L, 0);
+    return 1;
+    }
+
+  lua_pushinteger(L, int(inv->itemCount(size_t(itemId))));
+  return 1;
+  }
+
+static const luaL_Reg inventory_meta[] = {
+  {"items",     &ScriptEngine::luaInventoryGetItems},
+  {"transfer",  &ScriptEngine::luaInventoryTransfer},
+  {"itemCount", &ScriptEngine::luaInventoryItemCount},
+  {nullptr,     nullptr}
+  };
+  
+  int ScriptEngine::luaNpcInventory(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(npc) {
+      Lua::push(L, &npc->inventory());
+      Lua::setMetatable(L, "Inventory");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+  
+  int ScriptEngine::luaNpcWorld(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(npc) {
+      Lua::push(L, &npc->world());
+      Lua::setMetatable(L, "World");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+  
+  static const luaL_Reg npc_meta[] = {
+    {"inventory", &ScriptEngine::luaNpcInventory},
+    {"world",     &ScriptEngine::luaNpcWorld},
+    {nullptr,     nullptr}
+    };
+  
+  int ScriptEngine::luaInteractiveInventory(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    if(inter) {
+      Lua::push(L, &inter->inventory());
+      Lua::setMetatable(L, "Inventory");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+  
+  int ScriptEngine::luaInteractiveNeedToLockpick(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    auto* player = Lua::check<Npc>(L, 2, "Npc");
+    if(inter && player) {
+      lua_pushboolean(L, inter->needToLockpick(*player));
+      } else {
+      lua_pushboolean(L, false);
+      }
+    return 1;
+    }
+
+  static const luaL_Reg interactive_meta[] = {
+    {"inventory",      &ScriptEngine::luaInteractiveInventory},
+    {"needToLockpick", &ScriptEngine::luaInteractiveNeedToLockpick},
+    {nullptr,          nullptr}
+    };
+  
+  void ScriptEngine::registerInternalAPI() {
+    if(!L)
+      return;
+  
+  static const luaL_Reg world_meta[] = {
+    {nullptr,       nullptr}
+    };
+  static const luaL_Reg empty[] = {{nullptr, nullptr}};
+  Lua::registerClass(L, inventory_meta,   "Inventory",   empty);
+  Lua::registerClass(L, world_meta,       "World",       nullptr);
+  Lua::registerClass(L, npc_meta,         "Npc",         empty);
+  Lua::registerClass(L, interactive_meta, "Interactive", empty);
 
   lua_getglobal(L, "opengothic");
 
   lua_pushcfunction(L, luaPrintMessage, "_printMessage");
   lua_setfield(L, -2, "_printMessage");
-
-  lua_pushcfunction(L, luaInventoryGetItems, "_inventoryGetItems");
-  lua_setfield(L, -2, "_inventoryGetItems");
-
-  lua_pushcfunction(L, luaInventoryTransferAll, "_inventoryTransferAll");
-  lua_setfield(L, -2, "_inventoryTransferAll");
 
   lua_pop(L, 1);
   }
@@ -511,35 +611,6 @@ bool ScriptEngine::executeBootstrapCode(const char* code, const char* name) {
 
 void ScriptEngine::loadBootstrap() {
   const char* bootstrap = R"lua(
--- Inventory class (wraps C++ Inventory handle)
-local Inventory = {}
-Inventory.__index = Inventory
-
-function Inventory.new(handle, worldHandle)
-    return setmetatable({
-        _handle = handle,
-        _world = worldHandle
-    }, Inventory)
-end
-
-function Inventory:items()
-    return opengothic._inventoryGetItems(self._handle)
-end
-
-function Inventory:transferAllTo(target)
-    return opengothic._inventoryTransferAll(self._handle, target._handle, self._world)
-end
-
-function Inventory:hasItems()
-    local items = self:items()
-    for _, item in ipairs(items) do
-        if not item.equipped then
-            return true
-        end
-    end
-    return false
-end
-
 -- Event system
 opengothic.events = {
     _handlers = {}
@@ -553,17 +624,14 @@ function opengothic.events.register(eventName, callback)
 end
 
 -- Called from C++ to dispatch events
-function opengothic._dispatchEvent(eventName, playerInvHandle, targetInvHandle, worldHandle)
+function opengothic._dispatchEvent(eventName, player, target)
     local handlers = opengothic.events._handlers[eventName]
     if not handlers then
         return false
     end
 
-    local playerInv = Inventory.new(playerInvHandle, worldHandle)
-    local targetInv = Inventory.new(targetInvHandle, worldHandle)
-
     for _, handler in ipairs(handlers) do
-        local handled = handler(playerInv, targetInv)
+        local handled = handler(player, target)
         if handled then
             return true
         end
@@ -576,15 +644,55 @@ function opengothic.printMessage(msg)
     opengothic._printMessage(msg)
 end
 
--- Export Inventory class
-opengothic.Inventory = Inventory
+-- Extend Npc with convenience methods
+function opengothic.Npc:takeAllFrom(srcInv)
+    local items = srcInv:items()
+    local transferred = {}
+    local dstInv = self:inventory()
+    local world = self:world()
+    for _, item in ipairs(items) do
+        if not item.equipped then
+            dstInv:transfer(srcInv, item.id, item.count, world)
+            table.insert(transferred, {name = item.name, count = item.count})
+        end
+    end
+    return transferred
+end
+
 )lua";
 
   if(!executeBootstrapCode(bootstrap, "bootstrap"))
     Log::e("[ScriptEngine] Failed to load bootstrap code");
   }
 
-bool ScriptEngine::dispatchEvent(const char* eventName, std::initializer_list<void*> handles) {
+namespace {
+  template<class T>
+  const char* getMetatableName() {
+    if constexpr(std::is_same_v<T, Inventory>)
+      return "Inventory";
+    if constexpr(std::is_same_v<T, World>)
+      return "World";
+    if constexpr(std::is_same_v<T, Interactive>)
+      return "Interactive";
+    if constexpr(std::is_same_v<T, Npc>)
+      return "Npc";
+    return nullptr;
+    }
+  }
+
+template<class T>
+void ScriptEngine::pushDispatchArg(T* arg) {
+  const char* metatableName = getMetatableName<std::remove_const_t<T>>();
+  if(metatableName) {
+    Lua::push(L, const_cast<std::remove_const_t<T>*>(arg));
+    Lua::setMetatable(L, metatableName);
+    } else {
+    lua_pushlightuserdata(L, const_cast<std::remove_const_t<T>*>(arg));
+    }
+  }
+
+template<typename... Args>
+bool ScriptEngine::dispatchEvent(const char* eventName, Args... args) {
   if(!L)
     return false;
 
@@ -601,11 +709,9 @@ bool ScriptEngine::dispatchEvent(const char* eventName, std::initializer_list<vo
     }
 
   lua_pushstring(L, eventName);
+  (pushDispatchArg(args), ...);
 
-  for(void* handle : handles)
-    lua_pushlightuserdata(L, handle);
-
-  int nargs = 1 + int(handles.size());
+  int nargs = 1 + sizeof...(args);
   if(lua_pcall(L, nargs, 1, 0) != 0) {
     Log::e("[ScriptEngine] Event dispatch error: ", lua_tostring(L, -1));
     lua_pop(L, 2);
@@ -618,15 +724,17 @@ bool ScriptEngine::dispatchEvent(const char* eventName, std::initializer_list<vo
   }
 
 void ScriptEngine::bindHooks() {
-  Gothic::inst().onOpen = [this](Npc& player, Interactive& container) {
-    return dispatchEvent("onOpen",
-        {&player.inventory(), &container.inventory(), &player.world()});
-    };
+  bind(Gothic::inst().onOpen, "onOpen", std::function([](Npc& p, Interactive& c) {
+    return std::make_tuple(&p, &c);
+    }));
 
-  Gothic::inst().onRansack = [this](Npc& player, Npc& target) {
-    return dispatchEvent("onRansack",
-        {&player.inventory(), &target.inventory(), &player.world()});
-    };
+  bind(Gothic::inst().onRansack, "onRansack", std::function([](Npc& p, Npc& t) {
+    return std::make_tuple(&p, &t);
+    }));
+
+  bind(Gothic::inst().onNpcTakeDamage, "onNpcTakeDamage", std::function([](Npc& victim, Npc& attacker, int damageAmount, int damageType) {
+    return std::make_tuple(&victim, &attacker, damageAmount, damageType);
+    }));
   }
 
 void ScriptEngine::unbindHooks() {

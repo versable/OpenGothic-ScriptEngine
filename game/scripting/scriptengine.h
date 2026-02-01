@@ -5,6 +5,9 @@
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <tuple>
+
+#include <lua.h> // Required for pushDispatchArg overloads
 
 struct lua_State;
 
@@ -42,7 +45,38 @@ class ScriptEngine final {
 
   private:
     // Fire event via Lua dispatcher - returns true if handled
-    bool dispatchEvent(const char* eventName, std::initializer_list<void*> handles);
+    template<typename... Args>
+    bool dispatchEvent(const char* eventName, Args... args);
+
+    template<typename T>
+    void pushDispatchArg(T* arg);
+
+    void pushDispatchArg(int arg) {
+      lua_pushinteger(L, arg);
+      }
+
+    void pushDispatchArg(float arg) {
+      lua_pushnumber(L, static_cast<lua_Number>(arg));
+      }
+
+    void pushDispatchArg(bool arg) {
+      lua_pushboolean(L, arg);
+      }
+
+    void pushDispatchArg(const char* arg) {
+      lua_pushstring(L, arg);
+      }
+
+    template<typename... CppArgs, typename... LuaArgs>
+    void bind(std::function<bool(CppArgs...)>& hook, const char* eventName, std::function<std::tuple<LuaArgs...>(CppArgs...)> argTransformer) {
+      hook = [this, eventName, argTransformer](CppArgs... args) {
+        auto luaArgs = argTransformer(args...);
+        return std::apply([this, eventName](LuaArgs... largs) {
+          return this->dispatchEvent(eventName, largs...);
+          }, luaArgs);
+        };
+      }
+
     struct ScriptInfo {
       std::string filepath;
       std::string source;
@@ -62,8 +96,17 @@ class ScriptEngine final {
     bool compileScript(const std::string& source, std::string& outBytecode);
     bool executeBootstrapCode(const char* code, const char* name);
 
+  public:
     static int luaPrint(lua_State* L);
     static int luaPrintMessage(lua_State* L);
+
     static int luaInventoryGetItems(lua_State* L);
-    static int luaInventoryTransferAll(lua_State* L);
+    static int luaInventoryTransfer(lua_State* L);
+    static int luaInventoryItemCount(lua_State* L);
+
+    static int luaNpcInventory(lua_State* L);
+    static int luaNpcWorld(lua_State* L);
+
+    static int luaInteractiveInventory(lua_State* L);
+    static int luaInteractiveNeedToLockpick(lua_State* L);
   };

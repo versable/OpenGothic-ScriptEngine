@@ -1933,6 +1933,15 @@ void Npc::takeDamage(Npc& other, const Bullet* b, const CollideMask bMask, int32
     }
 
   hitResult = DamageCalculator::damageValue(other,*this,b,isSpell,dmg,bMask);
+
+  // Call the Lua hook for onNpcTakeDamage
+  if (Gothic::inst().onNpcTakeDamage && hitResult.value > 0) {
+    if (Gothic::inst().onNpcTakeDamage(*this, other, hitResult.value, damageType)) {
+      // Script handled the damage, skip default C++ damage application.
+      return;
+    }
+  }
+
   if(!isSpell && !isDown() && hitResult.hasHit)
     owner.addWeaponHitEffect(other,b,*this).play();
 
