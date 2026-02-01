@@ -86,6 +86,14 @@ configure_file(
   "${CMAKE_CURRENT_BINARY_DIR}/game/scripting/bootstrap_lua.h"
   @ONLY
 )
+
+# Lua constants embedding
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/game/scripting/constants.lua" CONSTANTS_LUA_CONTENT)
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/game/scripting/constants_lua.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/game/scripting/constants_lua.h"
+  @ONLY
+)
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/game")
 
 # shaders

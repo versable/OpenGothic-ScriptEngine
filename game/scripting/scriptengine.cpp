@@ -26,6 +26,7 @@
 #include <sstream>
 
 #include "scripting/bootstrap_lua.h"
+#include "scripting/constants_lua.h"
 
 namespace Lua {
   template<typename T>
@@ -409,6 +410,11 @@ void ScriptEngine::reloadAllScripts() {
 
 void ScriptEngine::loadModScripts() {
   using namespace Tempest;
+
+  // Always load constants.lua first
+  if(!executeBootstrapCode(CONSTANTS_LUA, "constants")) {
+    Log::e("[ScriptEngine] Failed to load constants code");
+    }
 
   auto scriptsDir = CommandLine::inst().nestedPath({u"Data", u"opengothic", u"scripts"}, Dir::FT_Dir);
   if(scriptsDir.empty()) {

@@ -1,0 +1,5 @@
+#pragma once
+
+inline const char* CONSTANTS_LUA = R"lua(
+@CONSTANTS_LUA_CONTENT@
+)lua";
