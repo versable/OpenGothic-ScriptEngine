@@ -13,6 +13,8 @@
 #include "world/objects/interactive.h"
 #include "world/world.h"
 #include "game/inventory.h"
+#include "game/damagecalculator.h"
+#include "game/gamescript.h"
 #include "commandline.h"
 #include "utils/fileutil.h"
 #include "gothic.h"
@@ -567,17 +569,93 @@ static const luaL_Reg inventory_meta[] = {
     {"needToLockpick", &ScriptEngine::luaInteractiveNeedToLockpick},
     {nullptr,          nullptr}
     };
-  
+
+  int ScriptEngine::luaDamageCalculatorDamageTypeMask(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, DamageCalculator::damageTypeMask(*npc));
+    return 1;
+    }
+
+  int ScriptEngine::luaDamageCalculatorDamageValue(lua_State* L) {
+    auto* attacker = Lua::check<Npc>(L, 1, "Npc");
+    auto* victim   = Lua::check<Npc>(L, 2, "Npc");
+    bool  isSpell  = lua_toboolean(L, 3);
+
+    if(!attacker || !victim) {
+      lua_pushinteger(L, 0);
+      lua_pushboolean(L, false);
+      return 2;
+      }
+
+    DamageCalculator::Damage dmg = {};
+
+    // Read damage array from table at arg 4
+    if(lua_istable(L, 4)) {
+      for(size_t i = 0; i < zenkit::DamageType::NUM; ++i) {
+        lua_rawgeti(L, 4, int(i));
+        if(lua_isnumber(L, -1))
+          dmg[i] = int32_t(lua_tointeger(L, -1));
+        lua_pop(L, 1);
+        }
+      }
+
+    auto result = DamageCalculator::damageValue(*attacker, *victim, nullptr, isSpell, dmg, COLL_DOEVERYTHING);
+
+    lua_pushinteger(L, result.value);
+    lua_pushboolean(L, result.hasHit);
+    return 2;
+    }
+
+  int ScriptEngine::luaGameScriptSpellDesc(lua_State* L) {
+    auto* world   = Lua::check<World>(L, 1, "World");
+    int   spellId = luaL_checkinteger(L, 2);
+
+    if(!world || spellId <= 0) {
+      lua_pushnil(L);
+      return 1;
+      }
+
+    const auto& spell = world->script().spellDesc(spellId);
+
+    lua_newtable(L);
+    lua_pushinteger(L, spell.damage_per_level);
+    lua_setfield(L, -2, "damagePerLevel");
+    lua_pushinteger(L, spell.damage_type);
+    lua_setfield(L, -2, "damageType");
+    lua_pushinteger(L, spell.spell_type);
+    lua_setfield(L, -2, "spellType");
+    lua_pushnumber(L, double(spell.time_per_mana));
+    lua_setfield(L, -2, "timePerMana");
+
+    return 1;
+    }
+
+  static const luaL_Reg damagecalculator_funcs[] = {
+    {"damageTypeMask", &ScriptEngine::luaDamageCalculatorDamageTypeMask},
+    {"damageValue",    &ScriptEngine::luaDamageCalculatorDamageValue},
+    {nullptr,          nullptr}
+    };
+
+  static const luaL_Reg gamescript_funcs[] = {
+    {"spellDesc", &ScriptEngine::luaGameScriptSpellDesc},
+    {nullptr,     nullptr}
+    };
+
   void ScriptEngine::registerInternalAPI() {
     if(!L)
       return;
-  
+
   static const luaL_Reg world_meta[] = {
-    {nullptr,       nullptr}
+    {"spellDesc", &ScriptEngine::luaGameScriptSpellDesc},
+    {nullptr,     nullptr}
     };
   static const luaL_Reg empty[] = {{nullptr, nullptr}};
   Lua::registerClass(L, inventory_meta,   "Inventory",   empty);
-  Lua::registerClass(L, world_meta,       "World",       nullptr);
+  Lua::registerClass(L, world_meta,       "World",       empty);
   Lua::registerClass(L, npc_meta,         "Npc",         empty);
   Lua::registerClass(L, interactive_meta, "Interactive", empty);
 
@@ -585,6 +663,14 @@ static const luaL_Reg inventory_meta[] = {
 
   lua_pushcfunction(L, luaPrintMessage, "_printMessage");
   lua_setfield(L, -2, "_printMessage");
+
+  // Register DamageCalculator as opengothic.DamageCalculator
+  lua_newtable(L);
+  for(const luaL_Reg* l = damagecalculator_funcs; l->name != nullptr; l++) {
+    lua_pushcfunction(L, l->func, l->name);
+    lua_setfield(L, -2, l->name);
+    }
+  lua_setfield(L, -2, "DamageCalculator");
 
   lua_pop(L, 1);
   }
@@ -683,12 +769,13 @@ void ScriptEngine::bindHooks() {
     return std::make_tuple(&p, &t);
     }));
 
-  bind(Gothic::inst().onNpcTakeDamage, "onNpcTakeDamage", std::function([](Npc& victim, Npc& attacker, int damageAmount, int damageType) {
-    return std::make_tuple(&victim, &attacker, damageAmount, damageType);
+  bind(Gothic::inst().onNpcTakeDamage, "onNpcTakeDamage", std::function([](Npc& victim, Npc& attacker, bool isSpell, int spellId) {
+    return std::make_tuple(&victim, &attacker, isSpell, spellId);
     }));
   }
 
 void ScriptEngine::unbindHooks() {
-  Gothic::inst().onOpen    = nullptr;
-  Gothic::inst().onRansack = nullptr;
+  Gothic::inst().onOpen          = nullptr;
+  Gothic::inst().onRansack       = nullptr;
+  Gothic::inst().onNpcTakeDamage = nullptr;
   }

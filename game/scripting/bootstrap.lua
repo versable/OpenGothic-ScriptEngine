@@ -34,6 +34,26 @@ function opengothic.printMessage(msg)
     opengothic._printMessage(msg)
 end
 
+-- DamageCalculator convenience: combines primitives for common case
+function opengothic.DamageCalculator.calculate(attacker, victim, isSpell, spellId)
+    local dmg = {}
+    for i = 0, 7 do dmg[i] = 0 end
+
+    if isSpell and spellId > 0 then
+        local spell = attacker:world():spellDesc(spellId)
+        if spell then
+            local damageType = spell.damageType
+            for i = 0, 7 do
+                if bit32.band(damageType, bit32.lshift(1, i)) ~= 0 then
+                    dmg[i] = spell.damagePerLevel
+                end
+            end
+        end
+    end
+
+    return opengothic.DamageCalculator.damageValue(attacker, victim, isSpell, dmg)
+end
+
 -- Extend Npc with convenience methods
 function opengothic.Npc:takeAllFrom(srcInv)
     local items = srcInv:items()

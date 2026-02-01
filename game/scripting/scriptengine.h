@@ -109,4 +109,9 @@ class ScriptEngine final {
 
     static int luaInteractiveInventory(lua_State* L);
     static int luaInteractiveNeedToLockpick(lua_State* L);
+
+    static int luaDamageCalculatorDamageTypeMask(lua_State* L);
+    static int luaDamageCalculatorDamageValue(lua_State* L);
+
+    static int luaGameScriptSpellDesc(lua_State* L);
   };
