@@ -520,6 +520,29 @@ static const luaL_Reg inventory_meta[] = {
   {nullptr,     nullptr}
   };
   
+  int ScriptEngine::luaNpcGetAttribute(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int attributeId = luaL_checkinteger(L, 2);
+    if(!npc || attributeId < 0 || attributeId >= Attribute::ATR_MAX) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->attribute(static_cast<Attribute>(attributeId)));
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcSetAttribute(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int attributeId = luaL_checkinteger(L, 2);
+    int value = luaL_checkinteger(L, 3);
+    bool allowUnconscious = lua_toboolean(L, 4);
+    if(!npc || attributeId < 0 || attributeId >= Attribute::ATR_MAX) {
+      return 0;
+      }
+    npc->changeAttribute(static_cast<Attribute>(attributeId), value, allowUnconscious);
+    return 0;
+    }
+  
   int ScriptEngine::luaNpcInventory(lua_State* L) {
     auto* npc = Lua::check<Npc>(L, 1, "Npc");
     if(npc) {
@@ -542,12 +565,530 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
   
+  int ScriptEngine::luaNpcGetLevel(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->level());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetExperience(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->experience());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetLearningPoints(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->learningPoints());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetProtection(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int protectionId = luaL_checkinteger(L, 2);
+    if(!npc || protectionId < 0 || protectionId >= Protection::PROT_MAX) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->protection(static_cast<Protection>(protectionId)));
+    return 1;
+    }
+
   static const luaL_Reg npc_meta[] = {
-    {"inventory", &ScriptEngine::luaNpcInventory},
-    {"world",     &ScriptEngine::luaNpcWorld},
-    {nullptr,     nullptr}
+    {"inventory",      &ScriptEngine::luaNpcInventory},
+    {"world",          &ScriptEngine::luaNpcWorld},
+    {"attribute",      &ScriptEngine::luaNpcGetAttribute},
+    {"changeAttribute",&ScriptEngine::luaNpcSetAttribute},
+    {"level",          &ScriptEngine::luaNpcGetLevel},
+    {"experience",     &ScriptEngine::luaNpcGetExperience},
+    {"learningPoints", &ScriptEngine::luaNpcGetLearningPoints},
+    {"protection",     &ScriptEngine::luaNpcGetProtection},
+    {"isDead",         &ScriptEngine::luaNpcIsDead},
+    {"isUnconscious",  &ScriptEngine::luaNpcIsUnconscious},
+    {"isDown",         &ScriptEngine::luaNpcIsDown},
+    {"bodyState",      &ScriptEngine::luaNpcGetBodyState},
+    {"hasState",       &ScriptEngine::luaNpcHasState},
+    {"rotation",       &ScriptEngine::luaNpcGetRotation},
+    {"rotationY",      &ScriptEngine::luaNpcGetRotationY},
+    {"position",       &ScriptEngine::luaNpcGetPosition},
+    {"setPosition",    &ScriptEngine::luaNpcSetPosition},
+    {"setDirectionY",  &ScriptEngine::luaNpcSetDirectionY},
+    {"walkMode",       &ScriptEngine::luaNpcGetWalkMode},
+    {"setWalkMode",    &ScriptEngine::luaNpcSetWalkMode},
+    {"talentSkill",    &ScriptEngine::luaNpcGetTalentSkill},
+    {"setTalentSkill", &ScriptEngine::luaNpcSetTalentSkill},
+    {"talentValue",    &ScriptEngine::luaNpcGetTalentValue},
+    {"hitChance",      &ScriptEngine::luaNpcGetHitChance},
+    {"attitude",       &ScriptEngine::luaNpcGetAttitude},
+    {"setAttitude",    &ScriptEngine::luaNpcSetAttitude},
+    {"displayName",    &ScriptEngine::luaNpcGetDisplayName},
+    {"item",           &ScriptEngine::luaNpcGetItem},
+    {nullptr,          nullptr}
     };
   
+  int ScriptEngine::luaNpcHasState(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int stateId = luaL_checkinteger(L, 2);
+    if(!npc) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, npc->hasState(static_cast<BodyState>(stateId)));
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetBodyState(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, static_cast<int>(npc->bodyState()));
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcIsDown(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, npc->isDown());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcIsUnconscious(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, npc->isUnconscious());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcIsDead(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, npc->isDead());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcSetWalkMode(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int mode = luaL_checkinteger(L, 2);
+    if(npc) {
+      npc->setWalkMode(static_cast<WalkBit>(mode));
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcGetWalkMode(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, static_cast<int>(npc->walkMode()));
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcSetDirectionY(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    float rotation = static_cast<float>(luaL_checknumber(L, 2));
+    if(npc) {
+      npc->setDirectionY(rotation);
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcSetPosition(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    float x = static_cast<float>(luaL_checknumber(L, 2));
+    float y = static_cast<float>(luaL_checknumber(L, 3));
+    float z = static_cast<float>(luaL_checknumber(L, 4));
+    if(npc) {
+      npc->setPosition(x, y, z);
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcGetPosition(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushnumber(L, 0.0f);
+      lua_pushnumber(L, 0.0f);
+      lua_pushnumber(L, 0.0f);
+      return 3;
+      }
+    Tempest::Vec3 pos = npc->position();
+    lua_pushnumber(L, pos.x);
+    lua_pushnumber(L, pos.y);
+    lua_pushnumber(L, pos.z);
+    return 3;
+    }
+
+  int ScriptEngine::luaNpcGetRotationY(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushnumber(L, 0.0f);
+      return 1;
+      }
+    lua_pushnumber(L, npc->rotationY());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetRotation(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushnumber(L, 0.0f);
+      return 1;
+      }
+    lua_pushnumber(L, npc->rotation());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcSetAttitude(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int attitudeId = luaL_checkinteger(L, 2);
+    if(npc) {
+      npc->setAttitude(static_cast<Attitude>(attitudeId));
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcGetAttitude(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, Attitude::ATT_NULL);
+      return 1;
+      }
+    lua_pushinteger(L, npc->attitude());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetHitChance(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int talentId = luaL_checkinteger(L, 2);
+    if(!npc || talentId < 0 || talentId >= Talent::TALENT_MAX_G2) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->hitChance(static_cast<Talent>(talentId)));
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetTalentValue(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int talentId = luaL_checkinteger(L, 2);
+    if(!npc || talentId < 0 || talentId >= Talent::TALENT_MAX_G2) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->talentValue(static_cast<Talent>(talentId)));
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcSetTalentSkill(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int talentId = luaL_checkinteger(L, 2);
+    int level = luaL_checkinteger(L, 3);
+    if(!npc || talentId < 0 || talentId >= Talent::TALENT_MAX_G2) {
+      return 0;
+      }
+    npc->setTalentSkill(static_cast<Talent>(talentId), level);
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcGetTalentSkill(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int talentId = luaL_checkinteger(L, 2);
+    if(!npc || talentId < 0 || talentId >= Talent::TALENT_MAX_G2) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->talentSkill(static_cast<Talent>(talentId)));
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetItem(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    size_t itemId = static_cast<size_t>(luaL_checkinteger(L, 2));
+    if(!npc) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Item* item = npc->getItem(itemId);
+    if(item) {
+      Lua::push(L, item);
+      Lua::setMetatable(L, "Item");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetDisplayName(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushstring(L, "");
+      return 1;
+      }
+    lua_pushstring(L, std::string(npc->displayName()).c_str());
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldSetDayTime(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    int hour = luaL_checkinteger(L, 2);
+    int minute = luaL_checkinteger(L, 3);
+    if(world) {
+      world->setDayTime(hour, minute);
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaWorldGetTime(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    if(!world) {
+      lua_pushinteger(L, 0);
+      lua_pushinteger(L, 0);
+      return 2;
+      }
+    gtime time = world->time();
+    lua_pushinteger(L, static_cast<int>(time.hour()));
+    lua_pushinteger(L, static_cast<int>(time.minute()));
+    return 2;
+    }
+
+  int ScriptEngine::luaWorldRemoveItem(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    auto* item = Lua::check<Item>(L, 2, "Item");
+    if(world && item) {
+      world->removeItem(*item);
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaWorldAddItemByInstIdPos(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    size_t itemInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
+    float x = static_cast<float>(luaL_checknumber(L, 3));
+    float y = static_cast<float>(luaL_checknumber(L, 4));
+    float z = static_cast<float>(luaL_checknumber(L, 5));
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Item* item = world->addItem(itemInstance, Tempest::Vec3(x, y, z));
+    if(item) {
+      Lua::push(L, item);
+      Lua::setMetatable(L, "Item");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldAddItemByInstIdWp(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    size_t itemInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
+    std::string_view waypoint = luaL_checkstring(L, 3);
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Item* item = world->addItem(itemInstance, waypoint);
+    if(item) {
+      Lua::push(L, item);
+      Lua::setMetatable(L, "Item");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldRemoveNpc(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    auto* npc = Lua::check<Npc>(L, 2, "Npc");
+    if(world && npc) {
+      world->removeNpc(*npc);
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaWorldAddNpcByInstIdPos(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    size_t npcInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
+    float x = static_cast<float>(luaL_checknumber(L, 3));
+    float y = static_cast<float>(luaL_checknumber(L, 4));
+    float z = static_cast<float>(luaL_checknumber(L, 5));
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Npc* npc = world->addNpc(npcInstance, Tempest::Vec3(x, y, z));
+    if(npc) {
+      Lua::push(L, npc);
+      Lua::setMetatable(L, "Npc");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldAddNpcByInstIdWp(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    size_t npcInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
+    std::string_view waypoint = luaL_checkstring(L, 3);
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Npc* npc = world->addNpc(npcInstance, waypoint);
+    if(npc) {
+      Lua::push(L, npc);
+      Lua::setMetatable(L, "Npc");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldFindItemByInstance(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    size_t itemInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
+    size_t n = static_cast<size_t>(luaL_optinteger(L, 3, 0));
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Item* item = world->findItemByInstance(itemInstance, n);
+    if(item) {
+      Lua::push(L, item);
+      Lua::setMetatable(L, "Item");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldFindNpcByInstance(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    size_t npcInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
+    size_t n = static_cast<size_t>(luaL_optinteger(L, 3, 0));
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Npc* npc = world->findNpcByInstance(npcInstance, n);
+    if(npc) {
+      Lua::push(L, npc);
+      Lua::setMetatable(L, "Npc");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveDetach(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    auto* npc = Lua::check<Npc>(L, 2, "Npc");
+    bool quick = lua_toboolean(L, 3);
+    if(inter && npc) {
+      lua_pushboolean(L, inter->detach(*npc, quick));
+      return 1;
+      }
+    lua_pushboolean(L, false);
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveAttach(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    auto* npc = Lua::check<Npc>(L, 2, "Npc");
+    if(inter && npc) {
+      lua_pushboolean(L, inter->attach(*npc));
+      return 1;
+      }
+    lua_pushboolean(L, false);
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveSetAsCracked(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    bool cracked = lua_toboolean(L, 2);
+    if(inter) {
+      inter->setAsCracked(cracked);
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaInteractiveIsCracked(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    if(!inter) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, inter->isCracked());
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveIsLadder(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    if(!inter) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, inter->isLadder());
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveIsTrueDoor(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    auto* npc = Lua::check<Npc>(L, 2, "Npc");
+    if(!inter || !npc) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, inter->isTrueDoor(*npc));
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveIsDoor(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    if(!inter) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, inter->isDoor());
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveIsContainer(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    if(!inter) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, inter->isContainer());
+    return 1;
+    }
+
   int ScriptEngine::luaInteractiveInventory(lua_State* L) {
     auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
     if(inter) {
@@ -573,6 +1114,14 @@ static const luaL_Reg inventory_meta[] = {
   static const luaL_Reg interactive_meta[] = {
     {"inventory",      &ScriptEngine::luaInteractiveInventory},
     {"needToLockpick", &ScriptEngine::luaInteractiveNeedToLockpick},
+    {"isContainer",    &ScriptEngine::luaInteractiveIsContainer},
+    {"isDoor",         &ScriptEngine::luaInteractiveIsDoor},
+    {"isTrueDoor",     &ScriptEngine::luaInteractiveIsTrueDoor},
+    {"isLadder",       &ScriptEngine::luaInteractiveIsLadder},
+    {"isCracked",      &ScriptEngine::luaInteractiveIsCracked},
+    {"setAsCracked",   &ScriptEngine::luaInteractiveSetAsCracked},
+    {"attach",         &ScriptEngine::luaInteractiveAttach},
+    {"detach",         &ScriptEngine::luaInteractiveDetach},
     {nullptr,          nullptr}
     };
 
@@ -651,16 +1200,239 @@ static const luaL_Reg inventory_meta[] = {
     {nullptr,     nullptr}
     };
 
-  void ScriptEngine::registerInternalAPI() {
+  int ScriptEngine::luaItemIsRune(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isRune());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsSpell(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isSpell());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsSpellOrRune(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isSpellOrRune());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsSpellShoot(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isSpellShoot());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsArmor(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isArmor());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsRing(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isRing());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsCrossbow(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isCrossbow());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIs2H(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->is2H());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsMulti(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isMulti());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsGold(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isGold());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsMission(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isMission());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemIsEquipped(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, item->isEquipped());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetClsId(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, static_cast<int>(item->clsId()));
+    return 1;
+    }
+
+  int ScriptEngine::luaItemSetCount(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    size_t count = static_cast<size_t>(luaL_checkinteger(L, 2));
+    if(item) {
+      item->setCount(count);
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaItemGetCount(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, static_cast<int>(item->count()));
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetSellCost(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, item->sellCost());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetCost(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, item->cost());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetDescription(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushstring(L, "");
+      return 1;
+      }
+    lua_pushstring(L, std::string(item->description()).c_str());
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetDisplayName(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushstring(L, "");
+      return 1;
+      }
+    lua_pushstring(L, std::string(item->displayName()).c_str());
+    return 1;
+    }
+
+static const luaL_Reg item_meta[] = {
+    {"displayName",     &ScriptEngine::luaItemGetDisplayName},
+    {"description",     &ScriptEngine::luaItemGetDescription},
+    {"cost",            &ScriptEngine::luaItemGetCost},
+    {"sellCost",        &ScriptEngine::luaItemGetSellCost},
+    {"count",           &ScriptEngine::luaItemGetCount},
+    {"setCount",        &ScriptEngine::luaItemSetCount},
+    {"clsId",           &ScriptEngine::luaItemGetClsId},
+    {"isEquipped",      &ScriptEngine::luaItemIsEquipped},
+    {"isMission",       &ScriptEngine::luaItemIsMission},
+    {"isGold",          &ScriptEngine::luaItemIsGold},
+    {"isMulti",         &ScriptEngine::luaItemIsMulti},
+    {"is2H",            &ScriptEngine::luaItemIs2H},
+    {"isCrossbow",      &ScriptEngine::luaItemIsCrossbow},
+    {"isRing",          &ScriptEngine::luaItemIsRing},
+    {"isArmor",         &ScriptEngine::luaItemIsArmor},
+    {"isSpellShoot",    &ScriptEngine::luaItemIsSpellShoot},
+    {"isSpellOrRune",   &ScriptEngine::luaItemIsSpellOrRune},
+    {"isSpell",         &ScriptEngine::luaItemIsSpell},
+    {"isRune",          &ScriptEngine::luaItemIsRune},
+    {nullptr,           nullptr}
+};
+
+void ScriptEngine::registerInternalAPI() {
     if(!L)
       return;
 
   static const luaL_Reg world_meta[] = {
-    {"spellDesc", &ScriptEngine::luaGameScriptSpellDesc},
-    {nullptr,     nullptr}
+    {"spellDesc",       &ScriptEngine::luaGameScriptSpellDesc},
+    {"time",            &ScriptEngine::luaWorldGetTime},
+    {"setDayTime",      &ScriptEngine::luaWorldSetDayTime},
+    {"addNpc",          &ScriptEngine::luaWorldAddNpcByInstIdWp},
+    {"addNpcAt",        &ScriptEngine::luaWorldAddNpcByInstIdPos},
+    {"removeNpc",       &ScriptEngine::luaWorldRemoveNpc},
+    {"addItem",         &ScriptEngine::luaWorldAddItemByInstIdWp},
+    {"addItemAt",       &ScriptEngine::luaWorldAddItemByInstIdPos},
+    {"removeItem",      &ScriptEngine::luaWorldRemoveItem},
+    {"findNpc",         &ScriptEngine::luaWorldFindNpcByInstance},
+    {"findItem",        &ScriptEngine::luaWorldFindItemByInstance},
+    {nullptr,           nullptr}
     };
   static const luaL_Reg empty[] = {{nullptr, nullptr}};
   Lua::registerClass(L, inventory_meta,   "Inventory",   empty);
+  Lua::registerClass(L, item_meta,        "Item",        empty);
   Lua::registerClass(L, world_meta,       "World",       empty);
   Lua::registerClass(L, npc_meta,         "Npc",         empty);
   Lua::registerClass(L, interactive_meta, "Interactive", empty);

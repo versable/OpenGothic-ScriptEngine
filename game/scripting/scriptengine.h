@@ -114,4 +114,82 @@ class ScriptEngine final {
     static int luaDamageCalculatorDamageValue(lua_State* L);
 
     static int luaGameScriptSpellDesc(lua_State* L);
+
+    // Npc Primitives
+    static int luaNpcGetAttribute(lua_State* L);
+    static int luaNpcSetAttribute(lua_State* L);
+    static int luaNpcGetLevel(lua_State* L);
+    static int luaNpcGetExperience(lua_State* L);
+    static int luaNpcGetLearningPoints(lua_State* L);
+    static int luaNpcGetProtection(lua_State* L);
+
+    static int luaNpcIsDead(lua_State* L);
+    static int luaNpcIsUnconscious(lua_State* L);
+    static int luaNpcIsDown(lua_State* L);
+    static int luaNpcGetBodyState(lua_State* L);
+    static int luaNpcHasState(lua_State* L);
+
+    static int luaNpcGetRotation(lua_State* L);
+    static int luaNpcGetRotationY(lua_State* L);
+    static int luaNpcGetPosition(lua_State* L);
+    static int luaNpcSetPosition(lua_State* L);
+    static int luaNpcSetDirectionY(lua_State* L);
+    static int luaNpcGetWalkMode(lua_State* L);
+    static int luaNpcSetWalkMode(lua_State* L);
+
+    static int luaNpcGetTalentSkill(lua_State* L);
+    static int luaNpcSetTalentSkill(lua_State* L);
+    static int luaNpcGetTalentValue(lua_State* L);
+    static int luaNpcGetHitChance(lua_State* L);
+
+    static int luaNpcGetAttitude(lua_State* L);
+    static int luaNpcSetAttitude(lua_State* L);
+    static int luaNpcGetDisplayName(lua_State* L);
+    static int luaNpcGetItem(lua_State* L);
+
+    // Item Primitives
+    static int luaItemGetDisplayName(lua_State* L);
+    static int luaItemGetDescription(lua_State* L);
+    static int luaItemGetCost(lua_State* L);
+    static int luaItemGetSellCost(lua_State* L);
+    static int luaItemGetCount(lua_State* L);
+    static int luaItemSetCount(lua_State* L);
+    static int luaItemGetClsId(lua_State* L);
+    static int luaItemIsEquipped(lua_State* L);
+    static int luaItemIsMission(lua_State* L);
+    static int luaItemIsGold(lua_State* L);
+    static int luaItemIsMulti(lua_State* L);
+    static int luaItemIs2H(lua_State* L);
+    static int luaItemIsCrossbow(lua_State* L);
+    static int luaItemIsRing(lua_State* L);
+    static int luaItemIsArmor(lua_State* L);
+    static int luaItemIsSpellShoot(lua_State* L);
+    static int luaItemIsSpellOrRune(lua_State* L);
+    static int luaItemIsSpell(lua_State* L);
+    static int luaItemIsRune(lua_State* L);
+
+    // World Primitives
+    static int luaWorldGetTime(lua_State* L);
+    static int luaWorldSetDayTime(lua_State* L);
+
+    static int luaWorldAddNpcByInstIdWp(lua_State* L); // addNpc(size_t npcInstance, std::string_view at)
+    static int luaWorldAddNpcByInstIdPos(lua_State* L); // addNpc(size_t npcInstance, const Tempest::Vec3& at)
+    static int luaWorldRemoveNpc(lua_State* L);
+
+    static int luaWorldAddItemByInstIdWp(lua_State* L); // addItem(size_t itemInstance, std::string_view at)
+    static int luaWorldAddItemByInstIdPos(lua_State* L); // addItem(size_t itemInstance, const Tempest::Vec3& pos)
+    static int luaWorldRemoveItem(lua_State* L);
+
+    static int luaWorldFindNpcByInstance(lua_State* L);
+    static int luaWorldFindItemByInstance(lua_State* L);
+
+    // Interactive Primitives
+    static int luaInteractiveIsContainer(lua_State* L);
+    static int luaInteractiveIsDoor(lua_State* L);
+    static int luaInteractiveIsTrueDoor(lua_State* L);
+    static int luaInteractiveIsLadder(lua_State* L);
+    static int luaInteractiveIsCracked(lua_State* L);
+    static int luaInteractiveSetAsCracked(lua_State* L);
+    static int luaInteractiveAttach(lua_State* L);
+    static int luaInteractiveDetach(lua_State* L);
   };
