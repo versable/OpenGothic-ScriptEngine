@@ -1,0 +1,5 @@
+#pragma once
+
+inline const char* BOOTSTRAP_LUA = R"lua(
+@BOOTSTRAP_LUA_CONTENT@
+)lua";

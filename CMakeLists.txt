@@ -79,6 +79,15 @@ file(GLOB_RECURSE OPENGOTHIC_SOURCES
 
 target_sources(${PROJECT_NAME} PRIVATE ${OPENGOTHIC_SOURCES} ${ObjCSOURCES} icon.rc)
 
+# Lua bootstrap embedding
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/game/scripting/bootstrap.lua" BOOTSTRAP_LUA_CONTENT)
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/game/scripting/bootstrap_lua.h.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/game/scripting/bootstrap_lua.h"
+  @ONLY
+)
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/game")
+
 # shaders
 add_subdirectory(shader)
 target_link_libraries(${PROJECT_NAME} GothicShaders)

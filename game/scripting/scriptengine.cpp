@@ -23,6 +23,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "scripting/bootstrap_lua.h"
+
 namespace Lua {
   template<typename T>
   T** push(lua_State* L, T* obj) {
@@ -610,58 +612,7 @@ bool ScriptEngine::executeBootstrapCode(const char* code, const char* name) {
   }
 
 void ScriptEngine::loadBootstrap() {
-  const char* bootstrap = R"lua(
--- Event system
-opengothic.events = {
-    _handlers = {}
-}
-
-function opengothic.events.register(eventName, callback)
-    if not opengothic.events._handlers[eventName] then
-        opengothic.events._handlers[eventName] = {}
-    end
-    table.insert(opengothic.events._handlers[eventName], callback)
-end
-
--- Called from C++ to dispatch events
-function opengothic._dispatchEvent(eventName, player, target)
-    local handlers = opengothic.events._handlers[eventName]
-    if not handlers then
-        return false
-    end
-
-    for _, handler in ipairs(handlers) do
-        local handled = handler(player, target)
-        if handled then
-            return true
-        end
-    end
-    return false
-end
-
--- Print message to game screen
-function opengothic.printMessage(msg)
-    opengothic._printMessage(msg)
-end
-
--- Extend Npc with convenience methods
-function opengothic.Npc:takeAllFrom(srcInv)
-    local items = srcInv:items()
-    local transferred = {}
-    local dstInv = self:inventory()
-    local world = self:world()
-    for _, item in ipairs(items) do
-        if not item.equipped then
-            dstInv:transfer(srcInv, item.id, item.count, world)
-            table.insert(transferred, {name = item.name, count = item.count})
-        end
-    end
-    return transferred
-end
-
-)lua";
-
-  if(!executeBootstrapCode(bootstrap, "bootstrap"))
+  if(!executeBootstrapCode(BOOTSTRAP_LUA, "bootstrap"))
     Log::e("[ScriptEngine] Failed to load bootstrap code");
   }
 
