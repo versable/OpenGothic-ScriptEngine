@@ -63,6 +63,7 @@ class ScriptEngine final {
     bool executeBootstrapCode(const char* code, const char* name);
 
     static int luaPrint(lua_State* L);
+    static int luaPrintMessage(lua_State* L);
     static int luaInventoryGetItems(lua_State* L);
     static int luaInventoryTransferAll(lua_State* L);
   };

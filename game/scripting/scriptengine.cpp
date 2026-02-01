@@ -394,6 +394,12 @@ void ScriptEngine::loadModScripts() {
 
 // --- Internal API (low-level, _ prefixed) ---
 
+int ScriptEngine::luaPrintMessage(lua_State* L) {
+  const char* msg = luaL_checkstring(L, 1);
+  Gothic::inst().onPrint(msg);
+  return 0;
+  }
+
 int ScriptEngine::luaInventoryGetItems(lua_State* L) {
   auto* inv = static_cast<Inventory*>(lua_touserdata(L, 1));
   if(!inv) {
@@ -430,21 +436,36 @@ int ScriptEngine::luaInventoryTransferAll(lua_State* L) {
   auto* world  = static_cast<World*>(lua_touserdata(L, 3));
 
   if(!srcInv || !dstInv || !world) {
-    lua_pushinteger(L, 0);
+    lua_newtable(L);
     return 1;
     }
 
-  // Collect non-equipped items to avoid iterator invalidation
-  std::vector<std::pair<size_t, size_t>> items;
+  // Collect non-equipped items with names to avoid iterator invalidation
+  struct ItemInfo {
+    size_t      id;
+    size_t      count;
+    std::string name;
+    };
+  std::vector<ItemInfo> items;
   for(auto it = srcInv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
     if(!it.isEquipped())
-      items.emplace_back(it->clsId(), it.count());
+      items.push_back({it->clsId(), it.count(), std::string(it->displayName())});
     }
 
-  for(auto& [id, count] : items)
-    Inventory::transfer(*dstInv, *srcInv, nullptr, id, count, *world);
+  for(auto& item : items)
+    Inventory::transfer(*dstInv, *srcInv, nullptr, item.id, item.count, *world);
 
-  lua_pushinteger(L, int(items.size()));
+  // Return table of transferred items
+  lua_newtable(L);
+  int idx = 1;
+  for(auto& item : items) {
+    lua_newtable(L);
+    lua_pushstring(L, item.name.c_str());
+    lua_setfield(L, -2, "name");
+    lua_pushinteger(L, int(item.count));
+    lua_setfield(L, -2, "count");
+    lua_rawseti(L, -2, idx++);
+    }
   return 1;
   }
 
@@ -453,6 +474,9 @@ void ScriptEngine::registerInternalAPI() {
     return;
 
   lua_getglobal(L, "opengothic");
+
+  lua_pushcfunction(L, luaPrintMessage, "_printMessage");
+  lua_setfield(L, -2, "_printMessage");
 
   lua_pushcfunction(L, luaInventoryGetItems, "_inventoryGetItems");
   lua_setfield(L, -2, "_inventoryGetItems");
@@ -545,6 +569,11 @@ function opengothic._dispatchEvent(eventName, playerInvHandle, targetInvHandle, 
         end
     end
     return false
+end
+
+-- Print message to game screen
+function opengothic.printMessage(msg)
+    opengothic._printMessage(msg)
 end
 
 -- Export Inventory class
