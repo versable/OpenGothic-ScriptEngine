@@ -1550,10 +1550,30 @@ void ScriptEngine::bindHooks() {
   bind(Gothic::inst().onNpcTakeDamage, "onNpcTakeDamage", std::function([](Npc& victim, Npc& attacker, bool isSpell, int spellId) {
     return std::make_tuple(&victim, &attacker, isSpell, spellId);
     }));
+
+  bind(Gothic::inst().onNpcDeath, "onNpcDeath", std::function([](Npc& victim, Npc* killer, bool isDeath) {
+    return std::make_tuple(&victim, killer, isDeath);
+    }));
+
+  bind(Gothic::inst().onItemPickup, "onItemPickup", std::function([](Npc& npc, Item& item) {
+    return std::make_tuple(&npc, &item);
+    }));
+
+  bind(Gothic::inst().onDialogStart, "onDialogStart", std::function([](Npc& npc, Npc& player) {
+    return std::make_tuple(&npc, &player);
+    }));
+
+  bind(Gothic::inst().onSpellCast, "onSpellCast", std::function([](Npc& caster, Npc* target, int spellId) {
+    return std::make_tuple(&caster, target, spellId);
+    }));
   }
 
 void ScriptEngine::unbindHooks() {
   Gothic::inst().onOpen          = nullptr;
   Gothic::inst().onRansack       = nullptr;
   Gothic::inst().onNpcTakeDamage = nullptr;
+  Gothic::inst().onNpcDeath      = nullptr;
+  Gothic::inst().onItemPickup    = nullptr;
+  Gothic::inst().onDialogStart   = nullptr;
+  Gothic::inst().onSpellCast     = nullptr;
   }

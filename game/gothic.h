@@ -173,7 +173,11 @@ class Gothic final {
     // Lua scripting hooks - return true to skip default behavior
     std::function<bool(Npc&, Interactive&)>                             onOpen;
     std::function<bool(Npc&, Npc&)>                                     onRansack;
-    std::function<bool(Npc&, Npc&, bool, int)>                           onNpcTakeDamage;
+    std::function<bool(Npc&, Npc&, bool, int)>                          onNpcTakeDamage;
+    std::function<bool(Npc&, Npc*, bool)>                               onNpcDeath;      // victim, killer, isDeath (vs unconscious)
+    std::function<bool(Npc&, Item&)>                                    onItemPickup;
+    std::function<bool(Npc&, Npc&)>                                     onDialogStart;   // npc, player
+    std::function<bool(Npc&, Npc*, int)>                                onSpellCast;     // caster, target, spellId
 
     Tempest::Signal<void(std::string_view,int,int,int,const GthFont&)>  onPrintScreen;
     Tempest::Signal<void(std::string_view)>                             onPrint;

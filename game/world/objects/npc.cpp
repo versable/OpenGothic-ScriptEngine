@@ -573,6 +573,13 @@ bool Npc::checkHealth(bool onChange, bool allowUnconscious) {
   }
 
 void Npc::onNoHealth(bool death, HitSound sndMask) {
+  // Lua hook - fires before death/unconscious processing
+  if(Gothic::inst().onNpcDeath) {
+    if(Gothic::inst().onNpcDeath(*this, currentOther, death)) {
+      return;  // Script handled it
+      }
+    }
+
   invent.switchActiveWeapon(*this,Item::NSLOT);
   visual.dropWeapon(*this);
   visual.dropShield(*this);
@@ -3023,6 +3030,13 @@ void Npc::commitSpell() {
   const int32_t splId = active->spellId();
   const auto&   spl   = owner.script().spellDesc(splId);
 
+  // Lua hook - fires before spell cast
+  if(Gothic::inst().onSpellCast) {
+    if(Gothic::inst().onSpellCast(*this, currentTarget, splId)) {
+      return;  // Script handled it
+      }
+    }
+
   if(owner.version().game==2)
     owner.script().invokeSpell(*this,currentTarget,*active);
 
@@ -3256,6 +3270,13 @@ Item* Npc::takeItem(Item& item) {
   if(state!=BS_STAND && state!=BS_SNEAK) {
     setAnim(Anim::Idle);
     return nullptr;
+    }
+
+  // Lua hook - fires before item pickup
+  if(Gothic::inst().onItemPickup) {
+    if(Gothic::inst().onItemPickup(*this, item)) {
+      return nullptr;  // Script handled it
+      }
     }
 
   auto dpos = item.position()-position();
@@ -4024,6 +4045,14 @@ void Npc::setPerceptionDisable(PercType t) {
 void Npc::startDialog(Npc& pl) {
   if(pl.isDown() || pl.isInAir() || isPlayer())
     return;
+
+  // Lua hook - fires before dialog starts
+  if(Gothic::inst().onDialogStart) {
+    if(Gothic::inst().onDialogStart(*this, pl)) {
+      return;  // Script handled it
+      }
+    }
+
   if(perceptionProcess(pl,nullptr,0,PERC_ASSESSTALK))
     setOther(&pl);
   }
