@@ -459,7 +459,7 @@ int ScriptEngine::luaInventoryGetItems(lua_State* L) {
     lua_newtable(L);
     return 1;
     }
-  
+
   lua_newtable(L);
   int idx = 1;
   for(auto it = inv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
@@ -519,7 +519,7 @@ static const luaL_Reg inventory_meta[] = {
   {"itemCount", &ScriptEngine::luaInventoryItemCount},
   {nullptr,     nullptr}
   };
-  
+
   int ScriptEngine::luaNpcGetAttribute(lua_State* L) {
     auto* npc = Lua::check<Npc>(L, 1, "Npc");
     int attributeId = luaL_checkinteger(L, 2);
@@ -542,7 +542,7 @@ static const luaL_Reg inventory_meta[] = {
     npc->changeAttribute(static_cast<Attribute>(attributeId), value, allowUnconscious);
     return 0;
     }
-  
+
   int ScriptEngine::luaNpcInventory(lua_State* L) {
     auto* npc = Lua::check<Npc>(L, 1, "Npc");
     if(npc) {
@@ -553,7 +553,7 @@ static const luaL_Reg inventory_meta[] = {
       }
     return 1;
     }
-  
+
   int ScriptEngine::luaNpcWorld(lua_State* L) {
     auto* npc = Lua::check<Npc>(L, 1, "Npc");
     if(npc) {
@@ -564,7 +564,7 @@ static const luaL_Reg inventory_meta[] = {
       }
     return 1;
     }
-  
+
   int ScriptEngine::luaNpcGetLevel(lua_State* L) {
     auto* npc = Lua::check<Npc>(L, 1, "Npc");
     if(!npc) {
@@ -637,7 +637,7 @@ static const luaL_Reg inventory_meta[] = {
     {"item",           &ScriptEngine::luaNpcGetItem},
     {nullptr,          nullptr}
     };
-  
+
   int ScriptEngine::luaNpcHasState(lua_State* L) {
     auto* npc = Lua::check<Npc>(L, 1, "Npc");
     int stateId = luaL_checkinteger(L, 2);
@@ -859,11 +859,11 @@ static const luaL_Reg inventory_meta[] = {
     int minute = luaL_checkinteger(L, 3);
     if(world) {
       world->setDayTime(hour, minute);
-      }
+    }
     return 0;
     }
 
-  int ScriptEngine::luaWorldGetTime(lua_State* L) {
+  int ScriptEngine::luaWorldTime(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     if(!world) {
       lua_pushinteger(L, 0);
@@ -885,7 +885,7 @@ static const luaL_Reg inventory_meta[] = {
     return 0;
     }
 
-  int ScriptEngine::luaWorldAddItemByInstIdPos(lua_State* L) {
+  int ScriptEngine::luaWorldAddItemAt(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     size_t itemInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
     float x = static_cast<float>(luaL_checknumber(L, 3));
@@ -894,32 +894,32 @@ static const luaL_Reg inventory_meta[] = {
     if(!world) {
       lua_pushnil(L);
       return 1;
-      }
+    }
     Item* item = world->addItem(itemInstance, Tempest::Vec3(x, y, z));
     if(item) {
       Lua::push(L, item);
       Lua::setMetatable(L, "Item");
-      } else {
+    } else {
       lua_pushnil(L);
-      }
+    }
     return 1;
     }
 
-  int ScriptEngine::luaWorldAddItemByInstIdWp(lua_State* L) {
+  int ScriptEngine::luaWorldAddItem(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     size_t itemInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
     std::string_view waypoint = luaL_checkstring(L, 3);
     if(!world) {
       lua_pushnil(L);
       return 1;
-      }
+    }
     Item* item = world->addItem(itemInstance, waypoint);
     if(item) {
       Lua::push(L, item);
       Lua::setMetatable(L, "Item");
-      } else {
+    } else {
       lua_pushnil(L);
-      }
+    }
     return 1;
     }
 
@@ -930,9 +930,9 @@ static const luaL_Reg inventory_meta[] = {
       world->removeNpc(*npc);
       }
     return 0;
-    }
+  }
 
-  int ScriptEngine::luaWorldAddNpcByInstIdPos(lua_State* L) {
+  int ScriptEngine::luaWorldAddNpcAt(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     size_t npcInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
     float x = static_cast<float>(luaL_checknumber(L, 3));
@@ -940,19 +940,20 @@ static const luaL_Reg inventory_meta[] = {
     float z = static_cast<float>(luaL_checknumber(L, 5));
     if(!world) {
       lua_pushnil(L);
-      return 1;
-      }
+        return 1;
+    }
+
     Npc* npc = world->addNpc(npcInstance, Tempest::Vec3(x, y, z));
     if(npc) {
       Lua::push(L, npc);
       Lua::setMetatable(L, "Npc");
-      } else {
+    } else {
       lua_pushnil(L);
-      }
+    }
     return 1;
     }
 
-  int ScriptEngine::luaWorldAddNpcByInstIdWp(lua_State* L) {
+  int ScriptEngine::luaWorldAddNpc(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     size_t npcInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
     std::string_view waypoint = luaL_checkstring(L, 3);
@@ -970,39 +971,39 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
-  int ScriptEngine::luaWorldFindItemByInstance(lua_State* L) {
+  int ScriptEngine::luaWorldFindItem(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     size_t itemInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
     size_t n = static_cast<size_t>(luaL_optinteger(L, 3, 0));
-    if(!world) {
-      lua_pushnil(L);
-      return 1;
-      }
+    if (!world) {
+        lua_pushnil(L);
+        return 1;
+    }
     Item* item = world->findItemByInstance(itemInstance, n);
-    if(item) {
-      Lua::push(L, item);
-      Lua::setMetatable(L, "Item");
-      } else {
-      lua_pushnil(L);
-      }
+    if (item) {
+        Lua::push(L, item);
+        Lua::setMetatable(L, "Item");
+    } else {
+        lua_pushnil(L);
+    }
     return 1;
     }
 
-  int ScriptEngine::luaWorldFindNpcByInstance(lua_State* L) {
+  int ScriptEngine::luaWorldFindNpc(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     size_t npcInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
     size_t n = static_cast<size_t>(luaL_optinteger(L, 3, 0));
     if(!world) {
       lua_pushnil(L);
       return 1;
-      }
+    }
     Npc* npc = world->findNpcByInstance(npcInstance, n);
     if(npc) {
       Lua::push(L, npc);
       Lua::setMetatable(L, "Npc");
-      } else {
+    } else {
       lua_pushnil(L);
-      }
+    }
     return 1;
     }
 
@@ -1099,7 +1100,7 @@ static const luaL_Reg inventory_meta[] = {
       }
     return 1;
     }
-  
+
   int ScriptEngine::luaInteractiveNeedToLockpick(lua_State* L) {
     auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
     auto* player = Lua::check<Npc>(L, 2, "Npc");
@@ -1418,16 +1419,16 @@ void ScriptEngine::registerInternalAPI() {
 
   static const luaL_Reg world_meta[] = {
     {"spellDesc",       &ScriptEngine::luaGameScriptSpellDesc},
-    {"time",            &ScriptEngine::luaWorldGetTime},
+    {"time",            &ScriptEngine::luaWorldTime},
     {"setDayTime",      &ScriptEngine::luaWorldSetDayTime},
-    {"addNpc",          &ScriptEngine::luaWorldAddNpcByInstIdWp},
-    {"addNpcAt",        &ScriptEngine::luaWorldAddNpcByInstIdPos},
+    {"addNpc",          &ScriptEngine::luaWorldAddNpc},
+    {"addNpcAt",        &ScriptEngine::luaWorldAddNpcAt},
     {"removeNpc",       &ScriptEngine::luaWorldRemoveNpc},
-    {"addItem",         &ScriptEngine::luaWorldAddItemByInstIdWp},
-    {"addItemAt",       &ScriptEngine::luaWorldAddItemByInstIdPos},
+    {"addItem",         &ScriptEngine::luaWorldAddItem},
+    {"addItemAt",       &ScriptEngine::luaWorldAddItemAt},
     {"removeItem",      &ScriptEngine::luaWorldRemoveItem},
-    {"findNpc",         &ScriptEngine::luaWorldFindNpcByInstance},
-    {"findItem",        &ScriptEngine::luaWorldFindItemByInstance},
+    {"findNpc",         &ScriptEngine::luaWorldFindNpc},
+    {"findItem",        &ScriptEngine::luaWorldFindItem},
     {nullptr,           nullptr}
     };
   static const luaL_Reg empty[] = {{nullptr, nullptr}};

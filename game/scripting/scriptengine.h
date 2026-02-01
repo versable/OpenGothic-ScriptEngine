@@ -169,19 +169,19 @@ class ScriptEngine final {
     static int luaItemIsRune(lua_State* L);
 
     // World Primitives
-    static int luaWorldGetTime(lua_State* L);
+    static int luaWorldTime(lua_State* L);
     static int luaWorldSetDayTime(lua_State* L);
 
-    static int luaWorldAddNpcByInstIdWp(lua_State* L); // addNpc(size_t npcInstance, std::string_view at)
-    static int luaWorldAddNpcByInstIdPos(lua_State* L); // addNpc(size_t npcInstance, const Tempest::Vec3& at)
+    static int luaWorldAddNpc(lua_State* L); // addNpc(size_t npcInstance, std::string_view at)
+    static int luaWorldAddNpcAt(lua_State* L); // addNpc(size_t npcInstance, const Tempest::Vec3& at)
     static int luaWorldRemoveNpc(lua_State* L);
 
-    static int luaWorldAddItemByInstIdWp(lua_State* L); // addItem(size_t itemInstance, std::string_view at)
-    static int luaWorldAddItemByInstIdPos(lua_State* L); // addItem(size_t itemInstance, const Tempest::Vec3& pos)
+    static int luaWorldAddItem(lua_State* L); // addItem(size_t itemInstance, std::string_view at)
+    static int luaWorldAddItemAt(lua_State* L); // addItem(size_t itemInstance, const Tempest::Vec3& pos)
     static int luaWorldRemoveItem(lua_State* L);
 
-    static int luaWorldFindNpcByInstance(lua_State* L);
-    static int luaWorldFindItemByInstance(lua_State* L);
+    static int luaWorldFindNpc(lua_State* L);
+    static int luaWorldFindItem(lua_State* L);
 
     // Interactive Primitives
     static int luaInteractiveIsContainer(lua_State* L);
