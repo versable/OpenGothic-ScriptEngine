@@ -1007,6 +1007,25 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
+  int ScriptEngine::luaWorldFindInteractive(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    size_t instanceId = static_cast<size_t>(luaL_checkinteger(L, 2));
+
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+    }
+
+    Interactive* interactive = world->mobsiById(static_cast<uint32_t>(instanceId));
+    if(interactive) {
+      Lua::push(L, interactive);
+      Lua::setMetatable(L, "Interactive");
+    } else {
+      lua_pushnil(L);
+    }
+    return 1;
+    }
+
   int ScriptEngine::luaInteractiveDetach(lua_State* L) {
     auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
     auto* npc = Lua::check<Npc>(L, 2, "Npc");
@@ -1429,6 +1448,7 @@ void ScriptEngine::registerInternalAPI() {
     {"removeItem",      &ScriptEngine::luaWorldRemoveItem},
     {"findNpc",         &ScriptEngine::luaWorldFindNpc},
     {"findItem",        &ScriptEngine::luaWorldFindItem},
+    {"findInteractive", &ScriptEngine::luaWorldFindInteractive},
     {nullptr,           nullptr}
     };
   static const luaL_Reg empty[] = {{nullptr, nullptr}};
