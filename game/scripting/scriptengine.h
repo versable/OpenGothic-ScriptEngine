@@ -193,4 +193,14 @@ class ScriptEngine final {
     static int luaInteractiveSetAsCracked(lua_State* L);
     static int luaInteractiveAttach(lua_State* L);
     static int luaInteractiveDetach(lua_State* L);
+
+  private:
+    // Tempest::Signal Handlers
+    void onStartGameHandler(std::string_view worldName);
+    void onLoadGameHandler(std::string_view savegameName);
+    void onSaveGameHandler(std::string_view slotName, std::string_view userName);
+    void onWorldLoadedHandler();
+    void onStartLoadingHandler();
+    void onSessionExitHandler();
+    void onSettingsChangedHandler();
   };

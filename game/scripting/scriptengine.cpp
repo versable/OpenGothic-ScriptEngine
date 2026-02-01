@@ -894,14 +894,14 @@ static const luaL_Reg inventory_meta[] = {
     if(!world) {
       lua_pushnil(L);
       return 1;
-    }
+      }
     Item* item = world->addItem(itemInstance, Tempest::Vec3(x, y, z));
     if(item) {
       Lua::push(L, item);
       Lua::setMetatable(L, "Item");
-    } else {
+      } else {
       lua_pushnil(L);
-    }
+      }
     return 1;
     }
 
@@ -912,14 +912,14 @@ static const luaL_Reg inventory_meta[] = {
     if(!world) {
       lua_pushnil(L);
       return 1;
-    }
+      }
     Item* item = world->addItem(itemInstance, waypoint);
     if(item) {
       Lua::push(L, item);
       Lua::setMetatable(L, "Item");
-    } else {
+      } else {
       lua_pushnil(L);
-    }
+      }
     return 1;
     }
 
@@ -930,7 +930,7 @@ static const luaL_Reg inventory_meta[] = {
       world->removeNpc(*npc);
       }
     return 0;
-  }
+    }
 
   int ScriptEngine::luaWorldAddNpcAt(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
@@ -940,16 +940,15 @@ static const luaL_Reg inventory_meta[] = {
     float z = static_cast<float>(luaL_checknumber(L, 5));
     if(!world) {
       lua_pushnil(L);
-        return 1;
-    }
-
+      return 1;
+      }
     Npc* npc = world->addNpc(npcInstance, Tempest::Vec3(x, y, z));
     if(npc) {
       Lua::push(L, npc);
       Lua::setMetatable(L, "Npc");
-    } else {
+      } else {
       lua_pushnil(L);
-    }
+      }
     return 1;
     }
 
@@ -975,17 +974,17 @@ static const luaL_Reg inventory_meta[] = {
     auto* world = Lua::check<World>(L, 1, "World");
     size_t itemInstance = static_cast<size_t>(luaL_checkinteger(L, 2));
     size_t n = static_cast<size_t>(luaL_optinteger(L, 3, 0));
-    if (!world) {
-        lua_pushnil(L);
-        return 1;
-    }
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
     Item* item = world->findItemByInstance(itemInstance, n);
-    if (item) {
-        Lua::push(L, item);
-        Lua::setMetatable(L, "Item");
-    } else {
-        lua_pushnil(L);
-    }
+    if(item) {
+      Lua::push(L, item);
+      Lua::setMetatable(L, "Item");
+      } else {
+      lua_pushnil(L);
+      }
     return 1;
     }
 
@@ -996,33 +995,31 @@ static const luaL_Reg inventory_meta[] = {
     if(!world) {
       lua_pushnil(L);
       return 1;
-    }
+      }
     Npc* npc = world->findNpcByInstance(npcInstance, n);
     if(npc) {
       Lua::push(L, npc);
       Lua::setMetatable(L, "Npc");
-    } else {
+      } else {
       lua_pushnil(L);
-    }
+      }
     return 1;
     }
 
   int ScriptEngine::luaWorldFindInteractive(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     size_t instanceId = static_cast<size_t>(luaL_checkinteger(L, 2));
-
     if(!world) {
       lua_pushnil(L);
       return 1;
-    }
-
+      }
     Interactive* interactive = world->mobsiById(static_cast<uint32_t>(instanceId));
     if(interactive) {
       Lua::push(L, interactive);
       Lua::setMetatable(L, "Interactive");
-    } else {
+      } else {
       lua_pushnil(L);
-    }
+      }
     return 1;
     }
 
@@ -1129,6 +1126,35 @@ static const luaL_Reg inventory_meta[] = {
       lua_pushboolean(L, false);
       }
     return 1;
+    }
+
+  // Tempest::Signal Handlers implementations
+  void ScriptEngine::onStartGameHandler(std::string_view worldName) {
+    (void)dispatchEvent("onStartGame", std::string(worldName).c_str());
+    }
+
+  void ScriptEngine::onLoadGameHandler(std::string_view savegameName) {
+    (void)dispatchEvent("onLoadGame", std::string(savegameName).c_str());
+    }
+
+  void ScriptEngine::onSaveGameHandler(std::string_view slotName, std::string_view userName) {
+    (void)dispatchEvent("onSaveGame", std::string(slotName).c_str(), std::string(userName).c_str());
+    }
+
+  void ScriptEngine::onWorldLoadedHandler() {
+    (void)dispatchEvent("onWorldLoaded");
+    }
+
+  void ScriptEngine::onStartLoadingHandler() {
+    (void)dispatchEvent("onStartLoading");
+    }
+
+  void ScriptEngine::onSessionExitHandler() {
+    (void)dispatchEvent("onSessionExit");
+    }
+
+  void ScriptEngine::onSettingsChangedHandler() {
+    (void)dispatchEvent("onSettingsChanged");
     }
 
   static const luaL_Reg interactive_meta[] = {
@@ -1587,6 +1613,15 @@ void ScriptEngine::bindHooks() {
   bind(Gothic::inst().onSpellCast, "onSpellCast", std::function([](Npc& caster, Npc* target, int spellId) {
     return std::make_tuple(&caster, target, spellId);
     }));
+
+  // New lifecycle and settings hooks (using Tempest::Signal::bind)
+  Gothic::inst().onStartGame.bind(this, &ScriptEngine::onStartGameHandler);
+  Gothic::inst().onLoadGame.bind(this, &ScriptEngine::onLoadGameHandler);
+  Gothic::inst().onSaveGame.bind(this, &ScriptEngine::onSaveGameHandler);
+  Gothic::inst().onWorldLoaded.bind(this, &ScriptEngine::onWorldLoadedHandler);
+  Gothic::inst().onStartLoading.bind(this, &ScriptEngine::onStartLoadingHandler);
+  Gothic::inst().onSessionExit.bind(this, &ScriptEngine::onSessionExitHandler);
+  Gothic::inst().onSettingsChanged.bind(this, &ScriptEngine::onSettingsChangedHandler);
   }
 
 void ScriptEngine::unbindHooks() {
@@ -1597,4 +1632,13 @@ void ScriptEngine::unbindHooks() {
   Gothic::inst().onItemPickup    = nullptr;
   Gothic::inst().onDialogStart   = nullptr;
   Gothic::inst().onSpellCast     = nullptr;
+
+  // Unbind new lifecycle and settings hooks
+  Gothic::inst().onStartGame.ubind(this, &ScriptEngine::onStartGameHandler);
+  Gothic::inst().onLoadGame.ubind(this, &ScriptEngine::onLoadGameHandler);
+  Gothic::inst().onSaveGame.ubind(this, &ScriptEngine::onSaveGameHandler);
+  Gothic::inst().onWorldLoaded.ubind(this, &ScriptEngine::onWorldLoadedHandler);
+  Gothic::inst().onStartLoading.ubind(this, &ScriptEngine::onStartLoadingHandler);
+  Gothic::inst().onSessionExit.ubind(this, &ScriptEngine::onSessionExitHandler);
+  Gothic::inst().onSettingsChanged.ubind(this, &ScriptEngine::onSettingsChangedHandler);
   }
