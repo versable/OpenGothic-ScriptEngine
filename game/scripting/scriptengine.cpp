@@ -1536,6 +1536,8 @@ namespace {
       return "World";
     if constexpr(std::is_same_v<T, Interactive>)
       return "Interactive";
+    if constexpr(std::is_same_v<T, Item>)
+      return "Item";
     if constexpr(std::is_same_v<T, Npc>)
       return "Npc";
     return nullptr;
