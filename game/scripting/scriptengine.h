@@ -196,6 +196,10 @@ class ScriptEngine final {
     static int luaWorldFindNpc(lua_State* L);
     static int luaWorldFindItem(lua_State* L);
     static int luaWorldFindInteractive(lua_State* L);
+    static int luaWorldGetPlayer(lua_State* L);
+    static int luaWorldPlaySound(lua_State* L);
+    static int luaWorldDay(lua_State* L);
+    static int luaWorldPlayEffect(lua_State* L);
 
     // Interactive Primitives
     static int luaInteractiveIsContainer(lua_State* L);

@@ -63,6 +63,15 @@ local function testWorld(world)
     print("=== Testing World primitives ===")
     local hour, minute = world:time()
     print("  time:", hour..":"..string.format("%02d", minute))
+    print("  day:", world:day())
+    local player = world:player()
+    if player then
+        print("  player:", player:displayName())
+        -- Test playEffect at player position
+        local x, y, z = player:position()
+        -- world:playEffect("YOUREFFECT", x, y, z) -- uncomment with valid effect name
+    end
+    -- world:playSound("YOURSOUND") -- uncomment with valid sound name
 end
 
 opengothic.events.register("onItemPickup", function(npc, item)

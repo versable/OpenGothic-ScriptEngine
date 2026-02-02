@@ -15,6 +15,7 @@
 #include "game/inventory.h"
 #include "game/damagecalculator.h"
 #include "game/gamescript.h"
+#include "graphics/effect.h"
 #include "commandline.h"
 #include "utils/fileutil.h"
 #include "gothic.h"
@@ -1096,6 +1097,57 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
+  int ScriptEngine::luaWorldGetPlayer(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Npc* player = world->player();
+    if(player) {
+      Lua::push(L, player);
+      Lua::setMetatable(L, "Npc");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldPlaySound(lua_State* L) {
+    Lua::check<World>(L, 1, "World");
+    const char* soundName = luaL_checkstring(L, 2);
+    Gothic::inst().emitGlobalSound(soundName);
+    return 0;
+    }
+
+  int ScriptEngine::luaWorldDay(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    if(!world) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    gtime t = world->time();
+    lua_pushinteger(L, static_cast<int>(t.day()));
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldPlayEffect(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    const char* effectName = luaL_checkstring(L, 2);
+    float x = static_cast<float>(luaL_checknumber(L, 3));
+    float y = static_cast<float>(luaL_checknumber(L, 4));
+    float z = static_cast<float>(luaL_checknumber(L, 5));
+    if(!world) {
+      return 0;
+      }
+    const VisualFx* vfx = Gothic::inst().loadVisualFx(effectName);
+    if(vfx) {
+      Effect e(*vfx, *world, Tempest::Vec3(x, y, z));
+      world->runEffect(std::move(e));
+      }
+    return 0;
+    }
+
   int ScriptEngine::luaInteractiveDetach(lua_State* L) {
     auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
     auto* npc = Lua::check<Npc>(L, 2, "Npc");
@@ -1615,6 +1667,10 @@ void ScriptEngine::registerInternalAPI() {
     {"findNpc",         &ScriptEngine::luaWorldFindNpc},
     {"findItem",        &ScriptEngine::luaWorldFindItem},
     {"findInteractive", &ScriptEngine::luaWorldFindInteractive},
+    {"player",          &ScriptEngine::luaWorldGetPlayer},
+    {"playSound",       &ScriptEngine::luaWorldPlaySound},
+    {"playEffect",      &ScriptEngine::luaWorldPlayEffect},
+    {"day",             &ScriptEngine::luaWorldDay},
     {nullptr,           nullptr}
     };
   static const luaL_Reg empty[] = {{nullptr, nullptr}};
