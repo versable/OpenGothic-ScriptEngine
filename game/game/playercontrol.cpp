@@ -857,6 +857,13 @@ void PlayerControl::implMove(uint64_t dt) {
 
 
   if(ctrl[Action::Jump]) {
+    // Lua hook - fires before jump
+    if(Gothic::inst().onJump) {
+      if(Gothic::inst().onJump(pl)) {
+        return;  // Script blocked it
+        }
+      }
+
     if(pl.bodyStateMasked()==BS_JUMP) {
       ani = Npc::Anim::Idle;
       }

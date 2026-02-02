@@ -189,6 +189,14 @@ class Gothic final {
     std::function<bool(Npc&)>                                           onCloseWeapon;   // npc
     std::function<bool(Npc&, Npc&, int)>                                onNpcPerception; // npc, other, percType
     std::function<bool(Npc&, Npc&, size_t, size_t, bool)>               onTrade;         // buyer, seller, itemId, count, isBuying
+    std::function<void(Npc&)>                                           onNpcSpawn;      // npc (notification only)
+    std::function<void(Npc&)>                                           onNpcRemove;     // npc (notification only)
+    std::function<bool(Npc&, Interactive&)>                             onMobInteract;   // npc, mob (before using non-container interactive)
+    std::function<bool(Npc&)>                                           onJump;          // npc
+    std::function<void(Npc&)>                                           onSwimStart;     // npc (notification only)
+    std::function<void(Npc&)>                                           onSwimEnd;       // npc (notification only)
+    std::function<void(Npc&)>                                           onDiveStart;     // npc (notification only)
+    std::function<void(Npc&)>                                           onDiveEnd;       // npc (notification only)
 
     Tempest::Signal<void(std::string_view,int,int,int,const GthFont&)>  onPrintScreen;
     Tempest::Signal<void(std::string_view)>                             onPrint;

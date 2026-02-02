@@ -308,6 +308,11 @@ Npc* WorldObjects::addNpc(size_t npcInstance, std::string_view at) {
     npcInvalid.emplace_back(npc);
     }
 
+  // Lua hook - notify NPC spawned
+  if(Gothic::inst().onNpcSpawn) {
+    Gothic::inst().onNpcSpawn(*npc);
+    }
+
   return npc;
   }
 
@@ -324,6 +329,12 @@ Npc* WorldObjects::addNpc(size_t npcInstance, const Vec3& pos) {
   owner.script().invokeRefreshAtInsert(*npc);
 
   npcArr.emplace_back(npc);
+
+  // Lua hook - notify NPC spawned
+  if(Gothic::inst().onNpcSpawn) {
+    Gothic::inst().onNpcSpawn(*npc);
+    }
+
   return npc;
   }
 
@@ -361,6 +372,11 @@ std::unique_ptr<Npc> WorldObjects::takeNpc(const Npc* ptr) {
   }
 
 void WorldObjects::removeNpc(Npc& npc) {
+  // Lua hook - notify NPC being removed
+  if(Gothic::inst().onNpcRemove) {
+    Gothic::inst().onNpcRemove(npc);
+    }
+
   auto ptr = takeNpc(&npc);
   if(ptr==nullptr)
     return;

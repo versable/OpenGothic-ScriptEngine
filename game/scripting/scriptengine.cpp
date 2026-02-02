@@ -1669,6 +1669,39 @@ void ScriptEngine::bindHooks() {
     return std::make_tuple(&buyer, &seller, static_cast<int>(itemId), static_cast<int>(count), isBuying);
     }));
 
+  bind(Gothic::inst().onMobInteract, "onMobInteract", std::function([](Npc& npc, Interactive& mob) {
+    return std::make_tuple(&npc, &mob);
+    }));
+
+  bind(Gothic::inst().onJump, "onJump", std::function([](Npc& npc) {
+    return std::make_tuple(&npc);
+    }));
+
+  // Notification-only hooks (return value ignored by C++ caller)
+  Gothic::inst().onNpcSpawn = [this](Npc& npc) {
+    dispatchEvent("onNpcSpawn", &npc);
+    };
+
+  Gothic::inst().onNpcRemove = [this](Npc& npc) {
+    dispatchEvent("onNpcRemove", &npc);
+    };
+
+  Gothic::inst().onSwimStart = [this](Npc& npc) {
+    dispatchEvent("onSwimStart", &npc);
+    };
+
+  Gothic::inst().onSwimEnd = [this](Npc& npc) {
+    dispatchEvent("onSwimEnd", &npc);
+    };
+
+  Gothic::inst().onDiveStart = [this](Npc& npc) {
+    dispatchEvent("onDiveStart", &npc);
+    };
+
+  Gothic::inst().onDiveEnd = [this](Npc& npc) {
+    dispatchEvent("onDiveEnd", &npc);
+    };
+
   // New lifecycle and settings hooks (using Tempest::Signal::bind)
   Gothic::inst().onStartGame.bind(this, &ScriptEngine::onStartGameHandler);
   Gothic::inst().onLoadGame.bind(this, &ScriptEngine::onLoadGameHandler);
@@ -1695,6 +1728,14 @@ void ScriptEngine::unbindHooks() {
   Gothic::inst().onCloseWeapon   = nullptr;
   Gothic::inst().onNpcPerception = nullptr;
   Gothic::inst().onTrade         = nullptr;
+  Gothic::inst().onNpcSpawn      = nullptr;
+  Gothic::inst().onNpcRemove     = nullptr;
+  Gothic::inst().onMobInteract   = nullptr;
+  Gothic::inst().onJump          = nullptr;
+  Gothic::inst().onSwimStart     = nullptr;
+  Gothic::inst().onSwimEnd       = nullptr;
+  Gothic::inst().onDiveStart     = nullptr;
+  Gothic::inst().onDiveEnd       = nullptr;
 
   // Unbind new lifecycle and settings hooks
   Gothic::inst().onStartGame.ubind(this, &ScriptEngine::onStartGameHandler);

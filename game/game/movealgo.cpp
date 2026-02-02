@@ -4,6 +4,7 @@
 #include "world/objects/interactive.h"
 #include "world/world.h"
 #include "serialize.h"
+#include "gothic.h"
 
 const float   MoveAlgo::closeToPointThreshold = 40;
 const float   MoveAlgo::climbMove             = 55;
@@ -878,6 +879,14 @@ void MoveAlgo::setAsSwim(bool f) {
       npc.closeWeapon(true);
     npc.dropTorch(true);
     }
+
+  // Lua hook - notify swim state change
+  if(f && Gothic::inst().onSwimStart) {
+    Gothic::inst().onSwimStart(npc);
+    }
+  if(!f && Gothic::inst().onSwimEnd) {
+    Gothic::inst().onSwimEnd(npc);
+    }
   }
 
 void MoveAlgo::setAsDive(bool f) {
@@ -894,6 +903,14 @@ void MoveAlgo::setAsDive(bool f) {
   if(f)
     flags=Flags(flags|Dive);  else
     flags=Flags(flags&(~Dive));
+
+  // Lua hook - notify dive state change
+  if(f && Gothic::inst().onDiveStart) {
+    Gothic::inst().onDiveStart(npc);
+    }
+  if(!f && Gothic::inst().onDiveEnd) {
+    Gothic::inst().onDiveEnd(npc);
+    }
   }
 
 void MoveAlgo::setAsFalling(bool f) {

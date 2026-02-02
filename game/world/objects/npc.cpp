@@ -4215,6 +4215,13 @@ bool Npc::setInteraction(Interactive *id, bool quick) {
   if(id==nullptr)
     return (currentInteract==nullptr);
 
+  // Lua hook - fires before using non-container interactive (mob)
+  if(!id->isContainer() && Gothic::inst().onMobInteract) {
+    if(Gothic::inst().onMobInteract(*this, *id)) {
+      return false;  // Script blocked it
+      }
+    }
+
   if(id->attach(*this)) {
     currentInteract = id;
     if(!quick) {
