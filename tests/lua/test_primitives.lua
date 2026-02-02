@@ -5,6 +5,7 @@ local Attr = opengothic.CONSTANTS.Attribute
 local function testNpc(npc)
     print("=== Testing Npc primitives ===")
     print("  displayName:", npc:displayName())
+    print("  instanceId:", npc:instanceId())
     print("  level:", npc:level())
     print("  hp:", npc:attribute(Attr.ATR_HITPOINTS))
     print("  maxHp:", npc:attribute(Attr.ATR_HITPOINTSMAX))
@@ -17,6 +18,14 @@ local function testNpc(npc)
     print("  isPlayer:", npc:isPlayer())
     print("  isDead:", npc:isDead())
     print("  isUnconscious:", npc:isUnconscious())
+
+    local weapon = npc:activeWeapon()
+    if weapon then
+        print("  activeWeapon:", weapon:displayName())
+    else
+        print("  activeWeapon: none")
+    end
+    print("  activeSpell:", npc:activeSpell())
 end
 
 local function testInventory(inv)

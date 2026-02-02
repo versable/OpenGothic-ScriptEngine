@@ -22,12 +22,16 @@ local function weaponTypeName(wtype)
 end
 
 opengothic.events.register("onDrawWeapon", function(npc, weaponType)
+    -- Note: activeWeapon() returns nil here because hook fires BEFORE draw
     print("onDrawWeapon", npc:displayName(), weaponTypeName(weaponType))
     return false
 end)
 
 opengothic.events.register("onCloseWeapon", function(npc)
-    print("onCloseWeapon", npc:displayName())
+    -- activeWeapon() still available here - hook fires before sheathing
+    local weapon = npc:activeWeapon()
+    local weaponName = weapon and weapon:displayName() or "none"
+    print("onCloseWeapon", npc:displayName(), "sheathing:", weaponName)
     return false
 end)
 

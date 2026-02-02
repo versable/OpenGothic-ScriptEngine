@@ -149,6 +149,10 @@ class ScriptEngine final {
     static int luaNpcSetAttitude(lua_State* L);
     static int luaNpcGetDisplayName(lua_State* L);
     static int luaNpcGetItem(lua_State* L);
+    static int luaNpcGetInstanceId(lua_State* L);
+    static int luaNpcGetActiveWeapon(lua_State* L);
+    static int luaNpcGetActiveSpell(lua_State* L);
+    static int luaNpcSetHealth(lua_State* L);
 
     // Item Primitives
     static int luaItemGetDisplayName(lua_State* L);

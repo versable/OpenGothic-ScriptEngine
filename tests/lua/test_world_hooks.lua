@@ -3,11 +3,11 @@
 -- Blocking hooks (return true to block): onMobInteract, onJump
 
 opengothic.events.register("onNpcSpawn", function(npc)
-    print("onNpcSpawn", npc:displayName())
+    print("onNpcSpawn", npc:displayName(), "id:"..npc:instanceId())
 end)
 
 opengothic.events.register("onNpcRemove", function(npc)
-    print("onNpcRemove", npc:displayName())
+    print("onNpcRemove", npc:displayName(), "id:"..npc:instanceId())
 end)
 
 opengothic.events.register("onMobInteract", function(npc, mob)

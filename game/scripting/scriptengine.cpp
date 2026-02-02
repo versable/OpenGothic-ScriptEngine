@@ -604,6 +604,54 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
+  int ScriptEngine::luaNpcGetInstanceId(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, static_cast<int>(npc->instanceSymbol()));
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetActiveWeapon(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Item* weapon = npc->activeWeapon();
+    if(weapon) {
+      Lua::push(L, weapon);
+      Lua::setMetatable(L, "Item");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcGetActiveSpell(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, -1);
+      return 1;
+      }
+    lua_pushinteger(L, npc->activeSpellLevel());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcSetHealth(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int value = luaL_checkinteger(L, 2);
+    if(!npc) {
+      return 0;
+      }
+    int currentHp = npc->attribute(Attribute::ATR_HITPOINTS);
+    int delta = value - currentHp;
+    npc->changeAttribute(Attribute::ATR_HITPOINTS, delta, true);
+    return 0;
+    }
+
   static const luaL_Reg npc_meta[] = {
     {"inventory",      &ScriptEngine::luaNpcInventory},
     {"world",          &ScriptEngine::luaNpcWorld},
@@ -636,6 +684,10 @@ static const luaL_Reg inventory_meta[] = {
     {"setAttitude",    &ScriptEngine::luaNpcSetAttitude},
     {"displayName",    &ScriptEngine::luaNpcGetDisplayName},
     {"item",           &ScriptEngine::luaNpcGetItem},
+    {"instanceId",     &ScriptEngine::luaNpcGetInstanceId},
+    {"activeWeapon",   &ScriptEngine::luaNpcGetActiveWeapon},
+    {"activeSpell",    &ScriptEngine::luaNpcGetActiveSpell},
+    {"setHealth",      &ScriptEngine::luaNpcSetHealth},
     {nullptr,          nullptr}
     };
 
