@@ -3327,6 +3327,14 @@ void Npc::moveItem(size_t id, Interactive &to, size_t count) {
 void Npc::sellItem(size_t id, Npc &to, size_t count) {
   if(id==owner.script().goldId()->index())
     return;
+
+  // Lua hook - fires before selling item (isBuying=false)
+  if(Gothic::inst().onTrade) {
+    if(Gothic::inst().onTrade(*this, to, id, count, false)) {
+      return;  // Script blocked it
+      }
+    }
+
   int32_t price = invent.sellPriceOf(id);
   Inventory::transfer(to.invent,invent,this,id,count,owner);
   invent.addItem(owner.script().goldId()->index(),size_t(price)*count,owner);
@@ -3335,6 +3343,13 @@ void Npc::sellItem(size_t id, Npc &to, size_t count) {
 void Npc::buyItem(size_t id, Npc &from, size_t count) {
   if(id==owner.script().goldId()->index())
     return;
+
+  // Lua hook - fires before buying item (isBuying=true)
+  if(Gothic::inst().onTrade) {
+    if(Gothic::inst().onTrade(*this, from, id, count, true)) {
+      return;  // Script blocked it
+      }
+    }
 
   int32_t price = from.invent.priceOf(id);
   if(price>0 && size_t(price)*count>invent.goldCount()) {
@@ -3527,6 +3542,14 @@ bool Npc::closeWeapon(bool noAnim) {
   auto weaponSt=weaponState();
   if(weaponSt==WeaponState::NoWeapon)
     return true;
+
+  // Lua hook - fires before weapon close
+  if(Gothic::inst().onCloseWeapon) {
+    if(Gothic::inst().onCloseWeapon(*this)) {
+      return false;  // Script blocked it
+      }
+    }
+
   if(!noAnim && !visual.startAnim(*this,WeaponState::NoWeapon))
     return false;
   visual.setAnimRotate(*this,0);
@@ -3557,6 +3580,13 @@ bool Npc::drawWeaponFist() {
   if(weaponSt!=WeaponState::NoWeapon) {
     closeWeapon(false);
     return false;
+    }
+
+  // Lua hook - fires before drawing fist (weaponType=1)
+  if(Gothic::inst().onDrawWeapon) {
+    if(Gothic::inst().onDrawWeapon(*this, 1)) {
+      return false;  // Script blocked it
+      }
     }
 
   if(isMonster()) {
@@ -3590,11 +3620,20 @@ bool Npc::drawWeaponMelee() {
 
   auto& weapon = *invent.currentMeleeWeapon();
   auto  st     = weapon.is2H() ? WeaponState::W2H : WeaponState::W1H;
+  int   wtype  = (st==WeaponState::W1H ? 3:4);
+
+  // Lua hook - fires before drawing melee weapon (weaponType=3 for 1H, 4 for 2H)
+  if(Gothic::inst().onDrawWeapon) {
+    if(Gothic::inst().onDrawWeapon(*this, wtype)) {
+      return false;  // Script blocked it
+      }
+    }
+
   if(!visual.startAnim(*this,st))
     return false;
 
   invent.switchActiveWeapon(*this,1);
-  hnpc->weapon = (st==WeaponState::W1H ? 3:4);
+  hnpc->weapon = wtype;
   return true;
   }
 
@@ -3614,10 +3653,19 @@ bool Npc::drawWeaponBow() {
 
   auto& weapon = *invent.currentRangedWeapon();
   auto  st     = weapon.isCrossbow() ? WeaponState::CBow : WeaponState::Bow;
+  int   wtype  = (st==WeaponState::Bow ? 5:6);
+
+  // Lua hook - fires before drawing ranged weapon (weaponType=5 for bow, 6 for crossbow)
+  if(Gothic::inst().onDrawWeapon) {
+    if(Gothic::inst().onDrawWeapon(*this, wtype)) {
+      return false;  // Script blocked it
+      }
+    }
+
   if(!visual.startAnim(*this,st))
     return false;
   invent.switchActiveWeapon(*this,2);
-  hnpc->weapon = (st==WeaponState::Bow ? 5:6);
+  hnpc->weapon = wtype;
   return true;
   }
 
@@ -3643,6 +3691,13 @@ bool Npc::drawSpell(int32_t spell) {
 
   if(!setInteraction(nullptr,true))
     return false;
+
+  // Lua hook - fires before drawing spell (weaponType=7)
+  if(Gothic::inst().onDrawWeapon) {
+    if(Gothic::inst().onDrawWeapon(*this, 7)) {
+      return false;  // Script blocked it
+      }
+    }
 
   if(!visual.startAnim(*this,WeaponState::Mage))
     return false;
@@ -4120,6 +4175,13 @@ bool Npc::perceptionProcess(Npc &pl, Npc* victim, float quadDist, PercType perc)
 
   if(quadDist>r)
     return false;
+
+  // Lua hook - fires when NPC perceives another
+  if(Gothic::inst().onNpcPerception) {
+    if(Gothic::inst().onNpcPerception(*this, pl, static_cast<int>(perc))) {
+      return true;  // Script handled it
+      }
+    }
 
   if(hasPerc(perc)) {
     owner.script().invokeState(this,&pl,victim,perception[perc].func);

@@ -185,6 +185,10 @@ class Gothic final {
     std::function<bool(Npc&, Item&)>                                    onEquip;         // npc, item
     std::function<bool(Npc&, Item&)>                                    onUnequip;       // npc, item
     std::function<bool(Npc&, size_t, size_t)>                           onDropItem;      // npc, itemId, count
+    std::function<bool(Npc&, int)>                                      onDrawWeapon;    // npc, weaponType (1=fist,3=1h,4=2h,5=bow,6=cbow,7=mage)
+    std::function<bool(Npc&)>                                           onCloseWeapon;   // npc
+    std::function<bool(Npc&, Npc&, int)>                                onNpcPerception; // npc, other, percType
+    std::function<bool(Npc&, Npc&, size_t, size_t, bool)>               onTrade;         // buyer, seller, itemId, count, isBuying
 
     Tempest::Signal<void(std::string_view,int,int,int,const GthFont&)>  onPrintScreen;
     Tempest::Signal<void(std::string_view)>                             onPrint;
