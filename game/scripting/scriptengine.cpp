@@ -1508,6 +1508,67 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
+  int ScriptEngine::luaItemGetWeight(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, item->handle().weight);
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetDamage(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, item->handle().damage_total);
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetDamageType(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, item->handle().damage_type);
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetProtection(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    int protectionId = luaL_checkinteger(L, 2);
+    if(!item || protectionId < 0 || protectionId >= Protection::PROT_MAX) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, item->handle().protection[protectionId]);
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetRange(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, item->handle().range);
+    return 1;
+    }
+
+  int ScriptEngine::luaItemGetFlags(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, item->itemFlag());
+    return 1;
+    }
+
 static const luaL_Reg item_meta[] = {
     {"displayName",     &ScriptEngine::luaItemGetDisplayName},
     {"description",     &ScriptEngine::luaItemGetDescription},
@@ -1528,6 +1589,12 @@ static const luaL_Reg item_meta[] = {
     {"isSpellOrRune",   &ScriptEngine::luaItemIsSpellOrRune},
     {"isSpell",         &ScriptEngine::luaItemIsSpell},
     {"isRune",          &ScriptEngine::luaItemIsRune},
+    {"weight",          &ScriptEngine::luaItemGetWeight},
+    {"damage",          &ScriptEngine::luaItemGetDamage},
+    {"damageType",      &ScriptEngine::luaItemGetDamageType},
+    {"protection",      &ScriptEngine::luaItemGetProtection},
+    {"range",           &ScriptEngine::luaItemGetRange},
+    {"flags",           &ScriptEngine::luaItemGetFlags},
     {nullptr,           nullptr}
 };
 

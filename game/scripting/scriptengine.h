@@ -174,6 +174,12 @@ class ScriptEngine final {
     static int luaItemIsSpellOrRune(lua_State* L);
     static int luaItemIsSpell(lua_State* L);
     static int luaItemIsRune(lua_State* L);
+    static int luaItemGetWeight(lua_State* L);
+    static int luaItemGetDamage(lua_State* L);
+    static int luaItemGetDamageType(lua_State* L);
+    static int luaItemGetProtection(lua_State* L);
+    static int luaItemGetRange(lua_State* L);
+    static int luaItemGetFlags(lua_State* L);
 
     // World Primitives
     static int luaWorldTime(lua_State* L);
