@@ -463,21 +463,9 @@ int ScriptEngine::luaInventoryGetItems(lua_State* L) {
   lua_newtable(L);
   int idx = 1;
   for(auto it = inv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
-    lua_newtable(L);
-
-    lua_pushinteger(L, int(it->clsId()));
-    lua_setfield(L, -2, "id");
-
-    auto name = it->displayName();
-    lua_pushlstring(L, name.data(), name.size());
-    lua_setfield(L, -2, "name");
-
-    lua_pushinteger(L, int(it.count()));
-    lua_setfield(L, -2, "count");
-
-    lua_pushboolean(L, it.isEquipped());
-    lua_setfield(L, -2, "equipped");
-
+    Item* item = const_cast<Item*>(&(*it));
+    Lua::push(L, item);
+    Lua::setMetatable(L, "Item");
     lua_rawseti(L, -2, idx++);
     }
   return 1;
