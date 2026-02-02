@@ -595,6 +595,16 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
+  int ScriptEngine::luaNpcGetGuild(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, npc->guild());
+    return 1;
+    }
+
   int ScriptEngine::luaNpcGetProtection(lua_State* L) {
     auto* npc = Lua::check<Npc>(L, 1, "Npc");
     int protectionId = luaL_checkinteger(L, 2);
@@ -614,10 +624,13 @@ static const luaL_Reg inventory_meta[] = {
     {"level",          &ScriptEngine::luaNpcGetLevel},
     {"experience",     &ScriptEngine::luaNpcGetExperience},
     {"learningPoints", &ScriptEngine::luaNpcGetLearningPoints},
+    {"guild",          &ScriptEngine::luaNpcGetGuild},
     {"protection",     &ScriptEngine::luaNpcGetProtection},
     {"isDead",         &ScriptEngine::luaNpcIsDead},
     {"isUnconscious",  &ScriptEngine::luaNpcIsUnconscious},
     {"isDown",         &ScriptEngine::luaNpcIsDown},
+    {"isPlayer",       &ScriptEngine::luaNpcIsPlayer},
+    {"isTalking",      &ScriptEngine::luaNpcIsTalking},
     {"bodyState",      &ScriptEngine::luaNpcGetBodyState},
     {"hasState",       &ScriptEngine::luaNpcHasState},
     {"rotation",       &ScriptEngine::luaNpcGetRotation},
@@ -666,6 +679,26 @@ static const luaL_Reg inventory_meta[] = {
       return 1;
       }
     lua_pushboolean(L, npc->isDown());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcIsPlayer(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, npc->isPlayer());
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcIsTalking(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(!npc) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+    lua_pushboolean(L, npc->isTalk());
     return 1;
     }
 

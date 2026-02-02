@@ -121,11 +121,14 @@ class ScriptEngine final {
     static int luaNpcGetLevel(lua_State* L);
     static int luaNpcGetExperience(lua_State* L);
     static int luaNpcGetLearningPoints(lua_State* L);
+    static int luaNpcGetGuild(lua_State* L);
     static int luaNpcGetProtection(lua_State* L);
 
     static int luaNpcIsDead(lua_State* L);
     static int luaNpcIsUnconscious(lua_State* L);
     static int luaNpcIsDown(lua_State* L);
+    static int luaNpcIsPlayer(lua_State* L);
+    static int luaNpcIsTalking(lua_State* L);
     static int luaNpcGetBodyState(lua_State* L);
     static int luaNpcHasState(lua_State* L);
 
