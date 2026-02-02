@@ -24,6 +24,7 @@
 
 #include "commandline.h"
 #include "mainwindow.h"
+#include "scripting/scriptengine.h"
 
 using namespace Tempest;
 using namespace FileUtil;
@@ -240,9 +241,15 @@ Gothic::Gothic() {
 
   onSettingsChanged.bind(this,&Gothic::setupSettings);
   setupSettings();
+
+  // Initialize Lua scripting engine - must happen after Resources are loaded
+  luaVm.reset(new ScriptEngine());
+  luaVm->initialize();
+  luaVm->loadModScripts();
   }
 
 Gothic::~Gothic() {
+  luaVm.reset();
   instance = nullptr;
   }
 

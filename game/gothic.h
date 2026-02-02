@@ -24,6 +24,7 @@ class ParticlesDefinitions;
 class MusicDefinitions;
 class FightAi;
 class IniFile;
+class ScriptEngine;
 
 class Gothic final {
   public:
@@ -92,6 +93,8 @@ class Gothic final {
     Npc*         player();
     Camera*      camera();
     auto         questLog() const -> const QuestLog*;
+
+    ScriptEngine* luaScript() const { return luaVm.get(); }
 
     void         setupGlobalScripts();
 
@@ -243,6 +246,7 @@ class Gothic final {
     std::atomic<LoadState>                  loadingFlag{LoadState::Idle};
 
     std::unique_ptr<GameSession>            game, pendingGame;
+    std::unique_ptr<ScriptEngine>           luaVm;
     std::unique_ptr<FightAi>                fight;
     std::unique_ptr<CameraDefinitions>      camDef;
     std::unique_ptr<SoundDefinitions>       soundDef;

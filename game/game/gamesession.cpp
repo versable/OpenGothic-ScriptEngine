@@ -11,10 +11,10 @@
 #include "world/objects/npc.h"
 #include "world/world.h"
 #include "sound/soundfx.h"
-#include "scripting/scriptengine.h"
 #include "serialize.h"
 #include "camera.h"
 #include "gothic.h"
+#include "scripting/scriptengine.h"
 
 using namespace Tempest;
 
@@ -75,9 +75,6 @@ GameSession::GameSession(std::string file) {
   setTime(gtime(8,0));
 
   vm.reset(new GameScript(*this));
-  luaVm.reset(new ScriptEngine());
-  luaVm->initialize();
-  luaVm->loadModScripts();
   initPerceptions();
 
   setWorld(std::unique_ptr<World>(new World(*this,std::move(file),true,[&](int v){
@@ -143,9 +140,6 @@ GameSession::GameSession(Serialize &fin) {
 
   cam.reset(new Camera());
   vm.reset(new GameScript(*this));
-  luaVm.reset(new ScriptEngine());
-  luaVm->initialize();
-  luaVm->loadModScripts();
   vm->initDialogs();
 
   if(true) {
@@ -324,7 +318,7 @@ void GameSession::tick(uint64_t dt) {
   wrldTime.addMilis(add/divTime);
 
   vm->tick(dt);
-  if(luaVm)
+  if(auto* luaVm = Gothic::inst().luaScript())
     luaVm->update(float(dt) * 0.001f);
   wrld->tick(dt);
   // std::this_thread::sleep_for(std::chrono::milliseconds(60));

@@ -261,11 +261,11 @@ bool Marvin::autoComplete(std::string& v) {
 bool Marvin::exec(std::string_view v) {
   // Handle lua command specially - capture entire rest of line
   if(v.size() > 4 && v.substr(0, 4) == "lua ") {
-    auto* g = Gothic::inst().gameSession();
-    if(g == nullptr || g->luaScript() == nullptr)
+    auto* luaVm = Gothic::inst().luaScript();
+    if(luaVm == nullptr)
       return false;
     auto code = std::string(v.substr(4));
-    auto result = g->luaScript()->executeString(code);
+    auto result = luaVm->executeString(code);
     if(!result.empty())
       print(result);
     return true;
@@ -486,18 +486,18 @@ bool Marvin::exec(std::string_view v) {
       // Handled specially before recognize() to capture full line
       return false;
     case C_LuaReload: {
-      auto* g = Gothic::inst().gameSession();
-      if(g==nullptr || g->luaScript()==nullptr)
+      auto* luaVm = Gothic::inst().luaScript();
+      if(luaVm==nullptr)
         return false;
-      g->luaScript()->reloadAllScripts();
+      luaVm->reloadAllScripts();
       print("Lua scripts reloaded");
       return true;
       }
     case C_LuaList: {
-      auto* g = Gothic::inst().gameSession();
-      if(g==nullptr || g->luaScript()==nullptr)
+      auto* luaVm = Gothic::inst().luaScript();
+      if(luaVm==nullptr)
         return false;
-      auto scripts = g->luaScript()->getLoadedScripts();
+      auto scripts = luaVm->getLoadedScripts();
       if(scripts.empty()) {
         print("No Lua scripts loaded");
         } else {
