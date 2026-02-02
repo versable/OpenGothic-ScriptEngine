@@ -3360,6 +3360,13 @@ void Npc::dropItem(size_t id, size_t count) {
   if(count<1)
     return;
 
+  // Lua hook - fires before item drop
+  if(Gothic::inst().onDropItem) {
+    if(Gothic::inst().onDropItem(*this, id, count)) {
+      return;  // Script handled it
+      }
+    }
+
   auto sk = visual.visualSkeleton();
   if(sk==nullptr)
     return;

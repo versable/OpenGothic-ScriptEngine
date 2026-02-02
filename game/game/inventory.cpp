@@ -415,6 +415,13 @@ bool Inventory::setSlot(Item *&slot, Item* next, Npc& owner, bool force) {
     auto  mainFlag = ItmFlags(itData.main_flag);
     auto  flag     = ItmFlags(itData.flags);
 
+    // Lua hook - fires before unequip
+    if(Gothic::inst().onUnequip) {
+      if(Gothic::inst().onUnequip(owner, *slot)) {
+        return false;  // Script handled it
+        }
+      }
+
     applyArmor(*slot,owner,-1);
     if(slot->isEquipped())
       slot->setAsEquipped(false);
@@ -441,6 +448,14 @@ bool Inventory::setSlot(Item *&slot, Item* next, Npc& owner, bool force) {
     return false;
 
   auto& itData = next->handle();
+
+  // Lua hook - fires before equip
+  if(Gothic::inst().onEquip) {
+    if(Gothic::inst().onEquip(owner, *next)) {
+      return false;  // Script handled it
+      }
+    }
+
   slot=next;
   slot->setAsEquipped(true);
   slot->setSlot(slotId(slot));
@@ -891,6 +906,13 @@ bool Inventory::use(size_t cls, Npc &owner, uint8_t slotHint, bool force) {
 
   if(!owner.setAnimItem(itData.scheme_name,-1))
     return false;
+
+  // Lua hook - fires before item use (consumables)
+  if(Gothic::inst().onUseItem) {
+    if(Gothic::inst().onUseItem(owner, *it)) {
+      return false;  // Script handled it
+      }
+    }
 
   // owner.stopDlgAnim();
   setCurrentItem(it->clsId());

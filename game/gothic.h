@@ -181,6 +181,10 @@ class Gothic final {
     std::function<bool(Npc&, Item&)>                                    onItemPickup;
     std::function<bool(Npc&, Npc&)>                                     onDialogStart;   // npc, player
     std::function<bool(Npc&, Npc*, int)>                                onSpellCast;     // caster, target, spellId
+    std::function<bool(Npc&, Item&)>                                    onUseItem;       // npc, item
+    std::function<bool(Npc&, Item&)>                                    onEquip;         // npc, item
+    std::function<bool(Npc&, Item&)>                                    onUnequip;       // npc, item
+    std::function<bool(Npc&, size_t, size_t)>                           onDropItem;      // npc, itemId, count
 
     Tempest::Signal<void(std::string_view,int,int,int,const GthFont&)>  onPrintScreen;
     Tempest::Signal<void(std::string_view)>                             onPrint;

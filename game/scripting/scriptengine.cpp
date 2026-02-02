@@ -1614,6 +1614,22 @@ void ScriptEngine::bindHooks() {
     return std::make_tuple(&caster, target, spellId);
     }));
 
+  bind(Gothic::inst().onUseItem, "onUseItem", std::function([](Npc& npc, Item& item) {
+    return std::make_tuple(&npc, &item);
+    }));
+
+  bind(Gothic::inst().onEquip, "onEquip", std::function([](Npc& npc, Item& item) {
+    return std::make_tuple(&npc, &item);
+    }));
+
+  bind(Gothic::inst().onUnequip, "onUnequip", std::function([](Npc& npc, Item& item) {
+    return std::make_tuple(&npc, &item);
+    }));
+
+  bind(Gothic::inst().onDropItem, "onDropItem", std::function([](Npc& npc, size_t itemId, size_t count) {
+    return std::make_tuple(&npc, static_cast<int>(itemId), static_cast<int>(count));
+    }));
+
   // New lifecycle and settings hooks (using Tempest::Signal::bind)
   Gothic::inst().onStartGame.bind(this, &ScriptEngine::onStartGameHandler);
   Gothic::inst().onLoadGame.bind(this, &ScriptEngine::onLoadGameHandler);
@@ -1632,6 +1648,10 @@ void ScriptEngine::unbindHooks() {
   Gothic::inst().onItemPickup    = nullptr;
   Gothic::inst().onDialogStart   = nullptr;
   Gothic::inst().onSpellCast     = nullptr;
+  Gothic::inst().onUseItem       = nullptr;
+  Gothic::inst().onEquip         = nullptr;
+  Gothic::inst().onUnequip       = nullptr;
+  Gothic::inst().onDropItem      = nullptr;
 
   // Unbind new lifecycle and settings hooks
   Gothic::inst().onStartGame.ubind(this, &ScriptEngine::onStartGameHandler);
