@@ -190,6 +190,10 @@ void ScriptEngine::registerCoreFunctions() {
   lua_setfield(L, -2, "VERSION");
   lua_setfield(L, -2, "core");
 
+  // opengothic.resolve
+  lua_pushcfunction(L, luaResolveSymbol, "opengothic.resolve");
+  lua_setfield(L, -2, "resolve");
+
   lua_setglobal(L, "opengothic");
 
   // Register internal API and load bootstrap
@@ -1280,6 +1284,23 @@ static const luaL_Reg inventory_meta[] = {
       return 1;
       }
     lua_pushinteger(L, inter->stateId());
+    return 1;
+    }
+
+  // Symbol Resolution
+  int ScriptEngine::luaResolveSymbol(lua_State* L) {
+    const char* name = luaL_checkstring(L, 1);
+    World* world = Gothic::inst().world();
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    size_t id = world->script().findSymbolIndex(name);
+    if(id == size_t(-1)) {
+      lua_pushnil(L);
+      } else {
+      lua_pushinteger(L, static_cast<lua_Integer>(id));
+      }
     return 1;
     }
 
