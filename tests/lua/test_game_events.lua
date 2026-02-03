@@ -2,7 +2,11 @@
 -- All hooks return false to allow default behavior
 
 opengothic.events.register("onOpen", function(player, container)
-    print("onOpen", player:displayName(), "->", container:isContainer() and "container" or "door")
+    local ctype = container:isContainer() and "container" or "door"
+    print("onOpen", player:displayName(), "->", ctype)
+    print("  focusName:", container:focusName())
+    print("  schemeName:", container:schemeName())
+    print("  state:", container:state())
     return false
 end)
 

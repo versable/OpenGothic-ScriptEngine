@@ -11,7 +11,9 @@ opengothic.events.register("onNpcRemove", function(npc)
 end)
 
 opengothic.events.register("onMobInteract", function(npc, mob)
-    print("onMobInteract", npc:displayName(), "->", "mob")
+    print("onMobInteract", npc:displayName(), "->", mob:focusName())
+    print("  schemeName:", mob:schemeName())
+    print("  state:", mob:state())
     return false
 end)
 

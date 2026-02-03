@@ -1253,6 +1253,36 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
+  int ScriptEngine::luaInteractiveGetFocusName(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    if(!inter) {
+      lua_pushstring(L, "");
+      return 1;
+      }
+    lua_pushstring(L, std::string(inter->focusName()).c_str());
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveGetSchemeName(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    if(!inter) {
+      lua_pushstring(L, "");
+      return 1;
+      }
+    lua_pushstring(L, std::string(inter->schemeName()).c_str());
+    return 1;
+    }
+
+  int ScriptEngine::luaInteractiveGetState(lua_State* L) {
+    auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
+    if(!inter) {
+      lua_pushinteger(L, 0);
+      return 1;
+      }
+    lua_pushinteger(L, inter->stateId());
+    return 1;
+    }
+
   // Tempest::Signal Handlers implementations
   void ScriptEngine::onStartGameHandler(std::string_view worldName) {
     (void)dispatchEvent("onStartGame", std::string(worldName).c_str());
@@ -1293,6 +1323,9 @@ static const luaL_Reg inventory_meta[] = {
     {"setAsCracked",   &ScriptEngine::luaInteractiveSetAsCracked},
     {"attach",         &ScriptEngine::luaInteractiveAttach},
     {"detach",         &ScriptEngine::luaInteractiveDetach},
+    {"focusName",      &ScriptEngine::luaInteractiveGetFocusName},
+    {"schemeName",     &ScriptEngine::luaInteractiveGetSchemeName},
+    {"state",          &ScriptEngine::luaInteractiveGetState},
     {nullptr,          nullptr}
     };
 

@@ -210,6 +210,9 @@ class ScriptEngine final {
     static int luaInteractiveSetAsCracked(lua_State* L);
     static int luaInteractiveAttach(lua_State* L);
     static int luaInteractiveDetach(lua_State* L);
+    static int luaInteractiveGetFocusName(lua_State* L);
+    static int luaInteractiveGetSchemeName(lua_State* L);
+    static int luaInteractiveGetState(lua_State* L);
 
   private:
     // Tempest::Signal Handlers
