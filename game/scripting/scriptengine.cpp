@@ -1822,13 +1822,13 @@ static const luaL_Reg inventory_meta[] = {
     // Store Lua function reference
     lua_pushvalue(L, 2);
     int ref = lua_ref(L, LUA_REGISTRYINDEX);
-    engine->luaExternals[name] = ref;
+    std::string nameStr = name;
+    engine->luaExternals[nameStr] = ref;
 
     // Register external with VM
     auto& vm = world->script().getVm();
-    std::string nameStr = name;
 
-    vm.register_external(nameStr, [engine, nameStr, L](/* variadic args handled via VM stack */) -> int {
+    vm.register_external(nameStr, [engine, nameStr](/* variadic args handled via VM stack */) -> int {
       // Get the Lua function
       auto it = engine->luaExternals.find(nameStr);
       if(it == engine->luaExternals.end()) {
@@ -1836,26 +1836,26 @@ static const luaL_Reg inventory_meta[] = {
         return 0;
         }
 
-      lua_rawgeti(L, LUA_REGISTRYINDEX, it->second);
-      if(!lua_isfunction(L, -1)) {
-        lua_pop(L, 1);
+      lua_rawgeti(engine->L, LUA_REGISTRYINDEX, it->second);
+      if(!lua_isfunction(engine->L, -1)) {
+        lua_pop(engine->L, 1);
         Log::e("[ScriptEngine] Lua external '", nameStr, "' is not a function");
         return 0;
         }
 
       // Call the Lua function (no args for now - complex arg passing would need VM stack inspection)
-      if(lua_pcall(L, 0, 1, 0) != 0) {
-        Log::e("[ScriptEngine] Lua external '", nameStr, "' error: ", lua_tostring(L, -1));
-        lua_pop(L, 1);
+      if(lua_pcall(engine->L, 0, 1, 0) != 0) {
+        Log::e("[ScriptEngine] Lua external '", nameStr, "' error: ", lua_tostring(engine->L, -1));
+        lua_pop(engine->L, 1);
         return 0;
         }
 
       // Get return value
       int result = 0;
-      if(lua_isnumber(L, -1)) {
-        result = static_cast<int>(lua_tonumber(L, -1));
+      if(lua_isnumber(engine->L, -1)) {
+        result = static_cast<int>(lua_tonumber(engine->L, -1));
         }
-      lua_pop(L, 1);
+      lua_pop(engine->L, 1);
 
       return result;
       });
@@ -1996,7 +1996,51 @@ static const luaL_Reg inventory_meta[] = {
     }
 
   void ScriptEngine::onWorldLoadedHandler() {
+    reregisterLuaExternals();
     (void)dispatchEvent("onWorldLoaded");
+    }
+
+  void ScriptEngine::reregisterLuaExternals() {
+    if(luaExternals.empty())
+      return;
+
+    World* world = Gothic::inst().world();
+    if(!world)
+      return;
+
+    auto& vm = world->script().getVm();
+
+    for(const auto& [nameStr, ref] : luaExternals) {
+      vm.register_external(nameStr, [this, nameStr](/* variadic args handled via VM stack */) -> int {
+        auto it = luaExternals.find(nameStr);
+        if(it == luaExternals.end()) {
+          Log::e("[ScriptEngine] Lua external '", nameStr, "' not found");
+          return 0;
+          }
+
+        lua_rawgeti(L, LUA_REGISTRYINDEX, it->second);
+        if(!lua_isfunction(L, -1)) {
+          lua_pop(L, 1);
+          Log::e("[ScriptEngine] Lua external '", nameStr, "' is not a function");
+          return 0;
+          }
+
+        if(lua_pcall(L, 0, 1, 0) != 0) {
+          Log::e("[ScriptEngine] Lua external '", nameStr, "' error: ", lua_tostring(L, -1));
+          lua_pop(L, 1);
+          return 0;
+          }
+
+        int result = 0;
+        if(lua_isnumber(L, -1)) {
+          result = static_cast<int>(lua_tonumber(L, -1));
+          }
+        lua_pop(L, 1);
+
+        return result;
+        });
+      Log::i("[ScriptEngine] Re-registered Lua external: ", nameStr);
+      }
     }
 
   void ScriptEngine::onStartLoadingHandler() {

@@ -244,4 +244,6 @@ class ScriptEngine final {
     void onStartLoadingHandler();
     void onSessionExitHandler();
     void onSettingsChangedHandler();
+
+    void reregisterLuaExternals();
   };
