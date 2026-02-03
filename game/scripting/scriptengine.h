@@ -217,6 +217,10 @@ class ScriptEngine final {
     // Symbol Resolution
     static int luaResolveSymbol(lua_State* L);
 
+    // Global Accessors
+    static int luaGetWorld(lua_State* L);
+    static int luaGetPlayer(lua_State* L);
+
   private:
     // Tempest::Signal Handlers
     void onStartGameHandler(std::string_view worldName);

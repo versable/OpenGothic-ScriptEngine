@@ -194,6 +194,14 @@ void ScriptEngine::registerCoreFunctions() {
   lua_pushcfunction(L, luaResolveSymbol, "opengothic.resolve");
   lua_setfield(L, -2, "resolve");
 
+  // opengothic.world
+  lua_pushcfunction(L, luaGetWorld, "opengothic.world");
+  lua_setfield(L, -2, "world");
+
+  // opengothic.player
+  lua_pushcfunction(L, luaGetPlayer, "opengothic.player");
+  lua_setfield(L, -2, "player");
+
   lua_setglobal(L, "opengothic");
 
   // Register internal API and load bootstrap
@@ -428,14 +436,22 @@ void ScriptEngine::loadModScripts() {
     }
 
   std::vector<std::u16string> scripts;
-  Dir::scan(scriptsDir, [&scripts, &scriptsDir](const std::u16string& name, Dir::FileType type) {
-    if(type == Dir::FT_File) {
-      if(name.size() > 4 && name.substr(name.size() - 4) == u".lua") {
-        scripts.push_back(scriptsDir + name);
+
+  // Recursive directory scanner
+  std::function<void(const std::u16string&)> scanDir = [&scripts, &scanDir](const std::u16string& dir) {
+    Dir::scan(dir, [&scripts, &scanDir, &dir](const std::u16string& name, Dir::FileType type) {
+      if(type == Dir::FT_File) {
+        if(name.size() > 4 && name.substr(name.size() - 4) == u".lua") {
+          scripts.push_back(dir + name);
+          }
+        } else if(type == Dir::FT_Dir && name != u"." && name != u"..") {
+        scanDir(dir + name + u"/");
         }
-      }
-    return false;
-    });
+      return false;
+      });
+    };
+
+  scanDir(scriptsDir);
 
   if(scripts.empty()) {
     Log::i("[ScriptEngine] No .lua scripts found in Data/opengothic/scripts/");
@@ -1301,6 +1317,34 @@ static const luaL_Reg inventory_meta[] = {
       } else {
       lua_pushinteger(L, static_cast<lua_Integer>(id));
       }
+    return 1;
+    }
+
+  // Global Accessors
+  int ScriptEngine::luaGetWorld(lua_State* L) {
+    World* world = Gothic::inst().world();
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Lua::push(L, world);
+    Lua::setMetatable(L, "World");
+    return 1;
+    }
+
+  int ScriptEngine::luaGetPlayer(lua_State* L) {
+    World* world = Gothic::inst().world();
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Npc* player = world->player();
+    if(!player) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Lua::push(L, player);
+    Lua::setMetatable(L, "Npc");
     return 1;
     }
 
