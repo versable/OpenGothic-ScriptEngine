@@ -6,8 +6,8 @@ local test = opengothic.test
 opengothic.events.register("onWorldLoaded", function()
     test.suite("Spawn Cycle")
 
-    local world = opengothic.player:world()
-    local player = world:player()
+    local world = opengothic.world()
+    local player = opengothic.player()
     local px, py, pz = player:position()
 
     -- Try to resolve a scavenger NPC type (common in Gothic games)
@@ -70,8 +70,8 @@ end)
 opengothic.events.register("onWorldLoaded", function()
     test.suite("Item Spawn Cycle")
 
-    local world = opengothic.player:world()
-    local player = world:player()
+    local world = opengothic.world()
+    local player = opengothic.player()
     local px, py, pz = player:position()
 
     -- Try to resolve common item types

@@ -6,8 +6,8 @@ local test = opengothic.test
 opengothic.events.register("onWorldLoaded", function()
     test.suite("Item Primitives")
 
-    local world = opengothic.player:world()
-    local player = world:player()
+    local world = opengothic.world()
+    local player = opengothic.player()
     local inv = player:inventory()
     local items = inv:items()
 

@@ -6,7 +6,7 @@ local test = opengothic.test
 opengothic.events.register("onWorldLoaded", function()
     test.suite("World Primitives")
 
-    local world = opengothic.player:world()
+    local world = opengothic.world()
     test.assert_not_nil(world, "world exists")
 
     -- Time tests

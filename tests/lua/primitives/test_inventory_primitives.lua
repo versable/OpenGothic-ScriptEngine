@@ -6,8 +6,8 @@ local test = opengothic.test
 opengothic.events.register("onWorldLoaded", function()
     test.suite("Inventory Primitives")
 
-    local world = opengothic.player:world()
-    local player = world:player()
+    local world = opengothic.world()
+    local player = opengothic.player()
     local inv = player:inventory()
 
     test.assert_not_nil(inv, "inventory exists")

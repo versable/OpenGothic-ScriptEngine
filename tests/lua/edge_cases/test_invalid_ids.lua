@@ -6,8 +6,8 @@ local test = opengothic.test
 opengothic.events.register("onWorldLoaded", function()
     test.suite("Invalid IDs")
 
-    local world = opengothic.player:world()
-    local player = world:player()
+    local world = opengothic.world()
+    local player = opengothic.player()
 
     -- Test very large IDs
     local largeId = 2147483647 -- INT_MAX

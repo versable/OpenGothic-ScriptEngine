@@ -7,8 +7,8 @@ local test = opengothic.test
 opengothic.events.register("onWorldLoaded", function()
     test.suite("Npc Primitives")
 
-    local world = opengothic.player:world()
-    local player = world:player()
+    local world = opengothic.world()
+    local player = opengothic.player()
 
     -- Identity tests
     test.assert_not_nil(player, "player exists")
@@ -64,9 +64,9 @@ opengothic.events.register("onWorldLoaded", function()
     -- Talent tests
     local Talent = opengothic.CONSTANTS.Talent
     if Talent then
-        test.assert_type(player:talentSkill(Talent.NPC_TALENT_1H), "number", "talentSkill returns number")
-        test.assert_type(player:talentValue(Talent.NPC_TALENT_1H), "number", "talentValue returns number")
-        test.assert_type(player:hitChance(Talent.NPC_TALENT_1H), "number", "hitChance returns number")
+        test.assert_type(player:talentSkill(Talent.TALENT_1H), "number", "talentSkill returns number")
+        test.assert_type(player:talentValue(Talent.TALENT_1H), "number", "talentValue returns number")
+        test.assert_type(player:hitChance(Talent.TALENT_1H), "number", "hitChance returns number")
     end
 
     -- Protection tests

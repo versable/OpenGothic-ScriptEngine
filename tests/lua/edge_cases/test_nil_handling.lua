@@ -6,7 +6,7 @@ local test = opengothic.test
 opengothic.events.register("onWorldLoaded", function()
     test.suite("Nil Handling")
 
-    local world = opengothic.player:world()
+    local world = opengothic.world()
 
     -- Invalid symbol lookup
     local badId = opengothic.resolve("NONEXISTENT_NPC_12345")
