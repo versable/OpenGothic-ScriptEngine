@@ -68,3 +68,49 @@ function opengothic.Npc:takeAllFrom(srcInv)
     end
     return transferred
 end
+
+-- Test Framework
+opengothic.test = {
+    _passed = 0,
+    _failed = 0,
+    _current = "unknown"
+}
+
+function opengothic.test.suite(name)
+    opengothic.test._current = name
+    print("=== Test Suite: " .. name .. " ===")
+end
+
+function opengothic.test.assert_true(condition, message)
+    if condition then
+        opengothic.test._passed = opengothic.test._passed + 1
+    else
+        opengothic.test._failed = opengothic.test._failed + 1
+        print("[FAIL] " .. opengothic.test._current .. ": " .. (message or "assertion failed"))
+    end
+end
+
+function opengothic.test.assert_eq(actual, expected, message)
+    if actual == expected then
+        opengothic.test._passed = opengothic.test._passed + 1
+    else
+        opengothic.test._failed = opengothic.test._failed + 1
+        print("[FAIL] " .. opengothic.test._current .. ": " .. (message or "expected " .. tostring(expected) .. ", got " .. tostring(actual)))
+    end
+end
+
+function opengothic.test.assert_not_nil(value, message)
+    opengothic.test.assert_true(value ~= nil, message or "expected non-nil value")
+end
+
+function opengothic.test.assert_type(value, expectedType, message)
+    opengothic.test.assert_eq(type(value), expectedType, message or "type mismatch")
+end
+
+function opengothic.test.summary()
+    local total = opengothic.test._passed + opengothic.test._failed
+    print("=== Test Summary ===")
+    print("Passed: " .. opengothic.test._passed .. "/" .. total)
+    print("Failed: " .. opengothic.test._failed .. "/" .. total)
+    return opengothic.test._failed == 0
+end
