@@ -88,6 +88,9 @@ class ScriptEngine final {
     bool                    jitEnabled = false;
     std::string*            consoleOutput = nullptr;
 
+    // Lua external functions registered from Lua (name -> Lua registry ref)
+    std::unordered_map<std::string, int> luaExternals;
+
     void setupSandbox();
     void registerCoreFunctions();
     void registerInternalAPI();
@@ -220,6 +223,17 @@ class ScriptEngine final {
     // Global Accessors
     static int luaGetWorld(lua_State* L);
     static int luaGetPlayer(lua_State* L);
+
+    // Daedalus Bridge (opengothic.daedalus)
+    static int luaDaedalusCall(lua_State* L);
+    static int luaDaedalusGet(lua_State* L);
+    static int luaDaedalusSet(lua_State* L);
+
+    // VM Bridge (opengothic.vm)
+    static int luaVmCallWithContext(lua_State* L);
+    static int luaVmRegisterExternal(lua_State* L);
+    static int luaVmGetSymbol(lua_State* L);
+    static int luaVmEnumerate(lua_State* L);
 
   private:
     // Tempest::Signal Handlers

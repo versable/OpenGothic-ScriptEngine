@@ -202,6 +202,28 @@ void ScriptEngine::registerCoreFunctions() {
   lua_pushcfunction(L, luaGetPlayer, "opengothic.player");
   lua_setfield(L, -2, "player");
 
+  // opengothic.daedalus
+  lua_newtable(L);
+  lua_pushcfunction(L, luaDaedalusCall, "daedalus.call");
+  lua_setfield(L, -2, "call");
+  lua_pushcfunction(L, luaDaedalusGet, "daedalus.get");
+  lua_setfield(L, -2, "get");
+  lua_pushcfunction(L, luaDaedalusSet, "daedalus.set");
+  lua_setfield(L, -2, "set");
+  lua_setfield(L, -2, "daedalus");
+
+  // opengothic.vm
+  lua_newtable(L);
+  lua_pushcfunction(L, luaVmCallWithContext, "vm.callWithContext");
+  lua_setfield(L, -2, "callWithContext");
+  lua_pushcfunction(L, luaVmRegisterExternal, "vm.registerExternal");
+  lua_setfield(L, -2, "registerExternal");
+  lua_pushcfunction(L, luaVmGetSymbol, "vm.getSymbol");
+  lua_setfield(L, -2, "getSymbol");
+  lua_pushcfunction(L, luaVmEnumerate, "vm.enumerate");
+  lua_setfield(L, -2, "enumerate");
+  lua_setfield(L, -2, "vm");
+
   lua_setglobal(L, "opengothic");
 
   // Register internal API and load bootstrap
@@ -1346,6 +1368,618 @@ static const luaL_Reg inventory_meta[] = {
     Lua::push(L, player);
     Lua::setMetatable(L, "Npc");
     return 1;
+    }
+
+  // --- Daedalus Bridge (opengothic.daedalus) ---
+
+  // Helper: Test if userdata has specific metatable (Luau compatible)
+  static bool testUserdata(lua_State* L, int idx, const char* name) {
+    if(!lua_isuserdata(L, idx))
+      return false;
+    lua_getmetatable(L, idx);
+    if(!lua_istable(L, -1)) {
+      lua_pop(L, 1);
+      return false;
+      }
+    luaL_getmetatable(L, name);
+    bool result = lua_rawequal(L, -1, -2);
+    lua_pop(L, 2);
+    return result;
+    }
+
+  // Helper: Push a Daedalus symbol value onto Lua stack
+  static void pushDaedalusValue(lua_State* L, zenkit::DaedalusSymbol* sym, uint16_t index = 0) {
+    if(!sym) {
+      lua_pushnil(L);
+      return;
+      }
+
+    switch(sym->type()) {
+      case zenkit::DaedalusDataType::INT:
+        lua_pushinteger(L, sym->get_int(index));
+        break;
+      case zenkit::DaedalusDataType::FLOAT:
+        lua_pushnumber(L, static_cast<double>(sym->get_float(index)));
+        break;
+      case zenkit::DaedalusDataType::STRING:
+        lua_pushstring(L, sym->get_string(index).c_str());
+        break;
+      case zenkit::DaedalusDataType::INSTANCE: {
+        auto inst = sym->get_instance();
+        if(!inst) {
+          lua_pushnil(L);
+          }
+        else if(auto npc = std::dynamic_pointer_cast<zenkit::INpc>(inst)) {
+          World* world = Gothic::inst().world();
+          if(world) {
+            Npc* npcObj = world->findNpcByInstance(npc->symbol_index());
+            if(npcObj) {
+              Lua::push(L, npcObj);
+              Lua::setMetatable(L, "Npc");
+              }
+            else {
+              lua_pushnil(L);
+              }
+            }
+          else {
+            lua_pushnil(L);
+            }
+          }
+        else if(auto item = std::dynamic_pointer_cast<zenkit::IItem>(inst)) {
+          World* world = Gothic::inst().world();
+          if(world) {
+            Item* itemObj = world->findItemByInstance(item->symbol_index());
+            if(itemObj) {
+              Lua::push(L, itemObj);
+              Lua::setMetatable(L, "Item");
+              }
+            else {
+              lua_pushnil(L);
+              }
+            }
+          else {
+            lua_pushnil(L);
+            }
+          }
+        else {
+          // Generic instance - return symbol index
+          lua_pushinteger(L, static_cast<lua_Integer>(inst->symbol_index()));
+          }
+        break;
+        }
+      case zenkit::DaedalusDataType::FUNCTION:
+        lua_pushinteger(L, static_cast<lua_Integer>(sym->get_int(index)));
+        break;
+      default:
+        lua_pushnil(L);
+        break;
+      }
+    }
+
+  // opengothic.daedalus.call(funcName, ...) - Call a Daedalus function
+  int ScriptEngine::luaDaedalusCall(lua_State* L) {
+    const char* funcName = luaL_checkstring(L, 1);
+
+    World* world = Gothic::inst().world();
+    if(!world) {
+      luaL_error(L, "daedalus.call: no world loaded");
+      return 0;
+      }
+
+    auto& vm = world->script().getVm();
+    auto* sym = vm.find_symbol_by_name(funcName);
+    if(!sym) {
+      luaL_error(L, "daedalus.call: function '%s' not found", funcName);
+      return 0;
+      }
+
+    if(!sym->is_const() && sym->type() != zenkit::DaedalusDataType::FUNCTION) {
+      luaL_error(L, "daedalus.call: '%s' is not a function", funcName);
+      return 0;
+      }
+
+    // Gather arguments from Lua stack (start at index 2)
+    int nargs = lua_gettop(L) - 1;
+
+    // Push arguments onto Daedalus VM stack (in reverse order for Daedalus)
+    for(int i = nargs + 1; i >= 2; --i) {
+      if(lua_isnumber(L, i)) {
+        double num = lua_tonumber(L, i);
+        // Check if it's an integer (no fractional part)
+        if(num == static_cast<double>(static_cast<int32_t>(num))) {
+          vm.push_int(static_cast<int32_t>(lua_tointeger(L, i)));
+          }
+        else {
+          vm.push_float(static_cast<float>(num));
+          }
+        }
+      else if(lua_isstring(L, i)) {
+        vm.push_string(lua_tostring(L, i));
+        }
+      else if(lua_isuserdata(L, i)) {
+        // Check if it's an Npc or Item
+        if(testUserdata(L, i, "Npc")) {
+          auto* npc = Lua::check<Npc>(L, i, "Npc");
+          if(npc) {
+            vm.push_instance(npc->handlePtr());
+            }
+          else {
+            vm.push_int(0);
+            }
+          }
+        else if(testUserdata(L, i, "Item")) {
+          auto* item = Lua::check<Item>(L, i, "Item");
+          if(item) {
+            vm.push_instance(item->handlePtr());
+            }
+          else {
+            vm.push_int(0);
+            }
+          }
+        else {
+          vm.push_int(0);
+          }
+        }
+      else if(lua_isnil(L, i)) {
+        vm.push_int(0);
+        }
+      else {
+        luaL_error(L, "daedalus.call: unsupported argument type at position %d", i - 1);
+        return 0;
+        }
+      }
+
+    // Call the function
+    try {
+      if(sym->rtype() == zenkit::DaedalusDataType::INT) {
+        int32_t result = vm.call_function<int32_t>(sym);
+        lua_pushinteger(L, result);
+        return 1;
+        }
+      else if(sym->rtype() == zenkit::DaedalusDataType::FLOAT) {
+        float result = vm.call_function<float>(sym);
+        lua_pushnumber(L, static_cast<double>(result));
+        return 1;
+        }
+      else if(sym->rtype() == zenkit::DaedalusDataType::STRING) {
+        std::string result = vm.call_function<std::string>(sym);
+        lua_pushstring(L, result.c_str());
+        return 1;
+        }
+      else {
+        vm.call_function<void>(sym);
+        return 0;
+        }
+      }
+    catch(const std::exception& e) {
+      luaL_error(L, "daedalus.call: error calling '%s': %s", funcName, e.what());
+      return 0;
+      }
+    }
+
+  // opengothic.daedalus.get(varName, [index]) - Get a Daedalus global variable
+  int ScriptEngine::luaDaedalusGet(lua_State* L) {
+    const char* varName = luaL_checkstring(L, 1);
+    uint16_t index = static_cast<uint16_t>(luaL_optinteger(L, 2, 0));
+
+    World* world = Gothic::inst().world();
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+
+    auto& vm = world->script().getVm();
+    auto* sym = vm.find_symbol_by_name(varName);
+    if(!sym) {
+      lua_pushnil(L);
+      return 1;
+      }
+
+    if(index >= sym->count()) {
+      lua_pushnil(L);
+      return 1;
+      }
+
+    pushDaedalusValue(L, sym, index);
+    return 1;
+    }
+
+  // opengothic.daedalus.set(varName, value, [index]) - Set a Daedalus global variable
+  int ScriptEngine::luaDaedalusSet(lua_State* L) {
+    const char* varName = luaL_checkstring(L, 1);
+    uint16_t index = static_cast<uint16_t>(luaL_optinteger(L, 3, 0));
+
+    World* world = Gothic::inst().world();
+    if(!world) {
+      luaL_error(L, "daedalus.set: no world loaded");
+      return 0;
+      }
+
+    auto& vm = world->script().getVm();
+    auto* sym = vm.find_symbol_by_name(varName);
+    if(!sym) {
+      luaL_error(L, "daedalus.set: symbol '%s' not found", varName);
+      return 0;
+      }
+
+    if(sym->is_const()) {
+      luaL_error(L, "daedalus.set: cannot modify const symbol '%s'", varName);
+      return 0;
+      }
+
+    if(index >= sym->count()) {
+      luaL_error(L, "daedalus.set: index %d out of bounds for '%s'", static_cast<int>(index), varName);
+      return 0;
+      }
+
+    switch(sym->type()) {
+      case zenkit::DaedalusDataType::INT:
+        if(!lua_isnumber(L, 2)) {
+          luaL_error(L, "daedalus.set: expected integer for '%s'", varName);
+          return 0;
+          }
+        sym->set_int(static_cast<int32_t>(lua_tointeger(L, 2)), index);
+        break;
+      case zenkit::DaedalusDataType::FLOAT:
+        if(!lua_isnumber(L, 2)) {
+          luaL_error(L, "daedalus.set: expected number for '%s'", varName);
+          return 0;
+          }
+        sym->set_float(static_cast<float>(lua_tonumber(L, 2)), index);
+        break;
+      case zenkit::DaedalusDataType::STRING:
+        if(!lua_isstring(L, 2)) {
+          luaL_error(L, "daedalus.set: expected string for '%s'", varName);
+          return 0;
+          }
+        sym->set_string(lua_tostring(L, 2), index);
+        break;
+      default:
+        luaL_error(L, "daedalus.set: cannot set symbol '%s' of this type", varName);
+        return 0;
+      }
+
+    return 0;
+    }
+
+  // --- VM Bridge (opengothic.vm) ---
+
+  // Helper: Set context variables from a Lua table
+  static bool setContextFromTable(lua_State* L, int tableIdx, zenkit::DaedalusVm& vm, World* /*world*/,
+                                  std::shared_ptr<zenkit::DaedalusInstance>& prevSelf,
+                                  std::shared_ptr<zenkit::DaedalusInstance>& prevOther,
+                                  std::shared_ptr<zenkit::DaedalusInstance>& prevVictim,
+                                  std::shared_ptr<zenkit::DaedalusInstance>& prevItem) {
+    if(!lua_istable(L, tableIdx))
+      return false;
+
+    // self
+    lua_getfield(L, tableIdx, "self");
+    if(!lua_isnil(L, -1) && testUserdata(L, -1, "Npc")) {
+      auto* npc = Lua::to<Npc>(L, -1);
+      if(npc) {
+        prevSelf = vm.global_self()->get_instance();
+        vm.global_self()->set_instance(npc->handlePtr());
+        }
+      }
+    lua_pop(L, 1);
+
+    // other
+    lua_getfield(L, tableIdx, "other");
+    if(!lua_isnil(L, -1) && testUserdata(L, -1, "Npc")) {
+      auto* npc = Lua::to<Npc>(L, -1);
+      if(npc) {
+        prevOther = vm.global_other()->get_instance();
+        vm.global_other()->set_instance(npc->handlePtr());
+        }
+      }
+    lua_pop(L, 1);
+
+    // victim
+    lua_getfield(L, tableIdx, "victim");
+    if(!lua_isnil(L, -1) && testUserdata(L, -1, "Npc")) {
+      auto* npc = Lua::to<Npc>(L, -1);
+      if(npc) {
+        prevVictim = vm.global_victim()->get_instance();
+        vm.global_victim()->set_instance(npc->handlePtr());
+        }
+      }
+    lua_pop(L, 1);
+
+    // item
+    lua_getfield(L, tableIdx, "item");
+    if(!lua_isnil(L, -1) && testUserdata(L, -1, "Item")) {
+      auto* item = Lua::to<Item>(L, -1);
+      if(item) {
+        prevItem = vm.global_item()->get_instance();
+        vm.global_item()->set_instance(item->handlePtr());
+        }
+      }
+    lua_pop(L, 1);
+
+    return true;
+    }
+
+  // opengothic.vm.callWithContext(funcName, contextTable, ...) - Call with explicit context
+  int ScriptEngine::luaVmCallWithContext(lua_State* L) {
+    const char* funcName = luaL_checkstring(L, 1);
+    luaL_checktype(L, 2, LUA_TTABLE);
+
+    World* world = Gothic::inst().world();
+    if(!world) {
+      luaL_error(L, "vm.callWithContext: no world loaded");
+      return 0;
+      }
+
+    auto& vm = world->script().getVm();
+    auto* sym = vm.find_symbol_by_name(funcName);
+    if(!sym) {
+      luaL_error(L, "vm.callWithContext: function '%s' not found", funcName);
+      return 0;
+      }
+
+    // Store previous context
+    std::shared_ptr<zenkit::DaedalusInstance> prevSelf, prevOther, prevVictim, prevItem;
+    setContextFromTable(L, 2, vm, world, prevSelf, prevOther, prevVictim, prevItem);
+
+    // Gather arguments from Lua stack (start at index 3)
+    int nargs = lua_gettop(L) - 2;
+    for(int i = nargs + 2; i >= 3; --i) {
+      if(lua_isnumber(L, i)) {
+        double num = lua_tonumber(L, i);
+        if(num == static_cast<double>(static_cast<int32_t>(num))) {
+          vm.push_int(static_cast<int32_t>(lua_tointeger(L, i)));
+          }
+        else {
+          vm.push_float(static_cast<float>(num));
+          }
+        }
+      else if(lua_isstring(L, i)) {
+        vm.push_string(lua_tostring(L, i));
+        }
+      else if(lua_isuserdata(L, i)) {
+        if(testUserdata(L, i, "Npc")) {
+          auto* npc = Lua::check<Npc>(L, i, "Npc");
+          if(npc) vm.push_instance(npc->handlePtr());
+          else vm.push_int(0);
+          }
+        else if(testUserdata(L, i, "Item")) {
+          auto* item = Lua::check<Item>(L, i, "Item");
+          if(item) vm.push_instance(item->handlePtr());
+          else vm.push_int(0);
+          }
+        else {
+          vm.push_int(0);
+          }
+        }
+      else {
+        vm.push_int(0);
+        }
+      }
+
+    int result = 0;
+    try {
+      if(sym->rtype() == zenkit::DaedalusDataType::INT) {
+        int32_t ret = vm.call_function<int32_t>(sym);
+        lua_pushinteger(L, ret);
+        result = 1;
+        }
+      else if(sym->rtype() == zenkit::DaedalusDataType::FLOAT) {
+        float ret = vm.call_function<float>(sym);
+        lua_pushnumber(L, static_cast<double>(ret));
+        result = 1;
+        }
+      else if(sym->rtype() == zenkit::DaedalusDataType::STRING) {
+        std::string ret = vm.call_function<std::string>(sym);
+        lua_pushstring(L, ret.c_str());
+        result = 1;
+        }
+      else {
+        vm.call_function<void>(sym);
+        result = 0;
+        }
+      }
+    catch(const std::exception& e) {
+      // Restore context before error
+      if(prevSelf)   vm.global_self()->set_instance(prevSelf);
+      if(prevOther)  vm.global_other()->set_instance(prevOther);
+      if(prevVictim) vm.global_victim()->set_instance(prevVictim);
+      if(prevItem)   vm.global_item()->set_instance(prevItem);
+      luaL_error(L, "vm.callWithContext: error calling '%s': %s", funcName, e.what());
+      return 0;
+      }
+
+    // Restore context
+    if(prevSelf)   vm.global_self()->set_instance(prevSelf);
+    if(prevOther)  vm.global_other()->set_instance(prevOther);
+    if(prevVictim) vm.global_victim()->set_instance(prevVictim);
+    if(prevItem)   vm.global_item()->set_instance(prevItem);
+
+    return result;
+    }
+
+  // opengothic.vm.registerExternal(name, luaFunc) - Register Lua function as Daedalus external
+  int ScriptEngine::luaVmRegisterExternal(lua_State* L) {
+    const char* name = luaL_checkstring(L, 1);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    // Get ScriptEngine pointer from registry
+    lua_getfield(L, LUA_REGISTRYINDEX, "ScriptEngine");
+    auto* engine = static_cast<ScriptEngine*>(lua_touserdata(L, -1));
+    lua_pop(L, 1);
+
+    if(!engine) {
+      luaL_error(L, "vm.registerExternal: engine not available");
+      return 0;
+      }
+
+    World* world = Gothic::inst().world();
+    if(!world) {
+      luaL_error(L, "vm.registerExternal: no world loaded");
+      return 0;
+      }
+
+    // Store Lua function reference
+    lua_pushvalue(L, 2);
+    int ref = lua_ref(L, LUA_REGISTRYINDEX);
+    engine->luaExternals[name] = ref;
+
+    // Register external with VM
+    auto& vm = world->script().getVm();
+    std::string nameStr = name;
+
+    vm.register_external(nameStr, [engine, nameStr, L](/* variadic args handled via VM stack */) -> int {
+      // Get the Lua function
+      auto it = engine->luaExternals.find(nameStr);
+      if(it == engine->luaExternals.end()) {
+        Log::e("[ScriptEngine] Lua external '", nameStr, "' not found");
+        return 0;
+        }
+
+      lua_rawgeti(L, LUA_REGISTRYINDEX, it->second);
+      if(!lua_isfunction(L, -1)) {
+        lua_pop(L, 1);
+        Log::e("[ScriptEngine] Lua external '", nameStr, "' is not a function");
+        return 0;
+        }
+
+      // Call the Lua function (no args for now - complex arg passing would need VM stack inspection)
+      if(lua_pcall(L, 0, 1, 0) != 0) {
+        Log::e("[ScriptEngine] Lua external '", nameStr, "' error: ", lua_tostring(L, -1));
+        lua_pop(L, 1);
+        return 0;
+        }
+
+      // Get return value
+      int result = 0;
+      if(lua_isnumber(L, -1)) {
+        result = static_cast<int>(lua_tonumber(L, -1));
+        }
+      lua_pop(L, 1);
+
+      return result;
+      });
+
+    Log::i("[ScriptEngine] Registered Lua external: ", name);
+    return 0;
+    }
+
+  // opengothic.vm.getSymbol(name) - Get symbol information
+  int ScriptEngine::luaVmGetSymbol(lua_State* L) {
+    const char* name = luaL_checkstring(L, 1);
+
+    World* world = Gothic::inst().world();
+    if(!world) {
+      lua_pushnil(L);
+      return 1;
+      }
+
+    auto& vm = world->script().getVm();
+    auto* sym = vm.find_symbol_by_name(name);
+    if(!sym) {
+      lua_pushnil(L);
+      return 1;
+      }
+
+    lua_newtable(L);
+
+    lua_pushstring(L, sym->name().c_str());
+    lua_setfield(L, -2, "name");
+
+    lua_pushinteger(L, static_cast<lua_Integer>(sym->index()));
+    lua_setfield(L, -2, "index");
+
+    lua_pushinteger(L, static_cast<lua_Integer>(sym->count()));
+    lua_setfield(L, -2, "count");
+
+    lua_pushboolean(L, sym->is_const());
+    lua_setfield(L, -2, "isConst");
+
+    const char* typeName = "unknown";
+    switch(sym->type()) {
+      case zenkit::DaedalusDataType::VOID:     typeName = "void"; break;
+      case zenkit::DaedalusDataType::FLOAT:    typeName = "float"; break;
+      case zenkit::DaedalusDataType::INT:      typeName = "int"; break;
+      case zenkit::DaedalusDataType::STRING:   typeName = "string"; break;
+      case zenkit::DaedalusDataType::CLASS:    typeName = "class"; break;
+      case zenkit::DaedalusDataType::FUNCTION: typeName = "function"; break;
+      case zenkit::DaedalusDataType::PROTOTYPE:typeName = "prototype"; break;
+      case zenkit::DaedalusDataType::INSTANCE: typeName = "instance"; break;
+      }
+    lua_pushstring(L, typeName);
+    lua_setfield(L, -2, "type");
+
+    // Include value for simple types
+    if(sym->type() == zenkit::DaedalusDataType::INT && sym->count() == 1) {
+      lua_pushinteger(L, sym->get_int());
+      lua_setfield(L, -2, "value");
+      }
+    else if(sym->type() == zenkit::DaedalusDataType::FLOAT && sym->count() == 1) {
+      lua_pushnumber(L, static_cast<double>(sym->get_float()));
+      lua_setfield(L, -2, "value");
+      }
+    else if(sym->type() == zenkit::DaedalusDataType::STRING && sym->count() == 1) {
+      lua_pushstring(L, sym->get_string().c_str());
+      lua_setfield(L, -2, "value");
+      }
+
+    return 1;
+    }
+
+  // opengothic.vm.enumerate(className, callback) - Enumerate symbols of a class
+  int ScriptEngine::luaVmEnumerate(lua_State* L) {
+    const char* className = luaL_checkstring(L, 1);
+    luaL_checktype(L, 2, LUA_TFUNCTION);
+
+    World* world = Gothic::inst().world();
+    if(!world) {
+      return 0;
+      }
+
+    auto& script = world->script();
+    auto& vm = script.getVm();
+    size_t count = script.symbolsCount();
+
+    for(size_t i = 0; i < count; ++i) {
+      auto* sym = vm.find_symbol_by_index(static_cast<uint32_t>(i));
+      if(!sym)
+        continue;
+
+      // Filter by class if specified
+      if(className[0] != '\0') {
+        // Check if symbol's parent class matches
+        uint32_t parentIdx = sym->parent();
+        if(parentIdx == uint32_t(-1))
+          continue;
+        auto* parentSym = vm.find_symbol_by_index(parentIdx);
+        if(!parentSym || parentSym->name() != className)
+          continue;
+        }
+
+      // Call callback with symbol info table
+      lua_pushvalue(L, 2); // callback
+
+      lua_newtable(L);
+      lua_pushstring(L, sym->name().c_str());
+      lua_setfield(L, -2, "name");
+      lua_pushinteger(L, static_cast<lua_Integer>(sym->index()));
+      lua_setfield(L, -2, "index");
+
+      if(lua_pcall(L, 1, 1, 0) != 0) {
+        Log::e("[ScriptEngine] vm.enumerate callback error: ", lua_tostring(L, -1));
+        lua_pop(L, 1);
+        break;
+        }
+
+      // Check if callback returned false to stop iteration
+      if(lua_isboolean(L, -1) && !lua_toboolean(L, -1)) {
+        lua_pop(L, 1);
+        break;
+        }
+      lua_pop(L, 1);
+      }
+
+    return 0;
     }
 
   // Tempest::Signal Handlers implementations
