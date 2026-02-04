@@ -106,6 +106,7 @@ class ScriptEngine final {
     static int luaInventoryGetItems(lua_State* L);
     static int luaInventoryTransfer(lua_State* L);
     static int luaInventoryItemCount(lua_State* L);
+    static int luaInventoryAddItem(lua_State* L);
 
     static int luaNpcInventory(lua_State* L);
     static int luaNpcWorld(lua_State* L);

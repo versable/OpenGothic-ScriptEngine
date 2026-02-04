@@ -544,10 +544,38 @@ int ScriptEngine::luaInventoryItemCount(lua_State* L) {
   return 1;
   }
 
+int ScriptEngine::luaInventoryAddItem(lua_State* L) {
+  auto* inv  = Lua::check<Inventory>(L, 1, "Inventory");
+  int itemId = luaL_checkinteger(L, 2);
+  int count  = luaL_checkinteger(L, 3);
+
+  if (!inv || itemId < 0 || count <= 0) {
+    lua_pushnil(L);
+    return 1;
+  }
+
+  World* world = Gothic::inst().world();
+  if (!world) {
+    luaL_error(L, "Inventory:addItem: no world loaded");
+    return 0;
+  }
+
+  Item* addedItem = inv->addItem(static_cast<size_t>(itemId), static_cast<size_t>(count), *world);
+
+  if (addedItem) {
+    Lua::push(L, addedItem);
+    Lua::setMetatable(L, "Item");
+  } else {
+    lua_pushnil(L);
+  }
+  return 1;
+  }
+
 static const luaL_Reg inventory_meta[] = {
   {"items",     &ScriptEngine::luaInventoryGetItems},
   {"transfer",  &ScriptEngine::luaInventoryTransfer},
   {"itemCount", &ScriptEngine::luaInventoryItemCount},
+  {"addItem",   &ScriptEngine::luaInventoryAddItem},
   {nullptr,     nullptr}
   };
 
