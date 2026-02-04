@@ -723,6 +723,51 @@ static const luaL_Reg inventory_meta[] = {
     return 0;
     }
 
+  int ScriptEngine::luaNpcDistanceTo(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    auto* other = Lua::check<Npc>(L, 2, "Npc");
+    if(npc == nullptr || other == nullptr) {
+      lua_pushnumber(L, -1);
+      return 1;
+      }
+    float dist = std::sqrt(npc->qDistTo(*other));
+    lua_pushnumber(L, dist);
+    return 1;
+    }
+
+  int ScriptEngine::luaNpcFlee(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(npc == nullptr)
+      return 0;
+    npc->aiPush(AiQueue::aiFlee());
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcSetTarget(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    auto* target = Lua::to<Npc>(L, 2);  // Can be nil
+    if(npc == nullptr)
+      return 0;
+    npc->setTarget(target);
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcAttack(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(npc == nullptr)
+      return 0;
+    npc->aiPush(AiQueue::aiAttack());
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcClearAI(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(npc == nullptr)
+      return 0;
+    npc->clearAiQueue();
+    return 0;
+    }
+
   static const luaL_Reg npc_meta[] = {
     {"inventory",      &ScriptEngine::luaNpcInventory},
     {"world",          &ScriptEngine::luaNpcWorld},
@@ -759,6 +804,11 @@ static const luaL_Reg inventory_meta[] = {
     {"activeWeapon",   &ScriptEngine::luaNpcGetActiveWeapon},
     {"activeSpell",    &ScriptEngine::luaNpcGetActiveSpell},
     {"setHealth",      &ScriptEngine::luaNpcSetHealth},
+    {"distanceTo",     &ScriptEngine::luaNpcDistanceTo},
+    {"flee",           &ScriptEngine::luaNpcFlee},
+    {"setTarget",      &ScriptEngine::luaNpcSetTarget},
+    {"attack",         &ScriptEngine::luaNpcAttack},
+    {"clearAI",        &ScriptEngine::luaNpcClearAI},
     {nullptr,          nullptr}
     };
 
@@ -1216,6 +1266,26 @@ static const luaL_Reg inventory_meta[] = {
       world->runEffect(std::move(e));
       }
     return 0;
+    }
+
+  int ScriptEngine::luaWorldFindNpcsInRange(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    float x = static_cast<float>(luaL_checknumber(L, 2));
+    float y = static_cast<float>(luaL_checknumber(L, 3));
+    float z = static_cast<float>(luaL_checknumber(L, 4));
+    float range = static_cast<float>(luaL_checknumber(L, 5));
+    if(!world) {
+      lua_newtable(L);
+      return 1;
+      }
+    lua_newtable(L);
+    int idx = 1;
+    world->detectNpc(Tempest::Vec3(x, y, z), range, [L, &idx](Npc& npc) {
+      Lua::push(L, &npc);
+      Lua::setMetatable(L, "Npc");
+      lua_rawseti(L, -2, idx++);
+      });
+    return 1;
     }
 
   int ScriptEngine::luaInteractiveDetach(lua_State* L) {
@@ -2473,9 +2543,10 @@ void ScriptEngine::registerInternalAPI() {
     {"findInteractive", &ScriptEngine::luaWorldFindInteractive},
     {"player",          &ScriptEngine::luaWorldGetPlayer},
     {"playSound",       &ScriptEngine::luaWorldPlaySound},
-    {"playEffect",      &ScriptEngine::luaWorldPlayEffect},
-    {"day",             &ScriptEngine::luaWorldDay},
-    {nullptr,           nullptr}
+    {"playEffect",       &ScriptEngine::luaWorldPlayEffect},
+    {"day",              &ScriptEngine::luaWorldDay},
+    {"findNpcsInRange",  &ScriptEngine::luaWorldFindNpcsInRange},
+    {nullptr,            nullptr}
     };
   static const luaL_Reg empty[] = {{nullptr, nullptr}};
   Lua::registerClass(L, inventory_meta,   "Inventory",   empty);

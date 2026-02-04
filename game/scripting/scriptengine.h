@@ -161,6 +161,11 @@ class ScriptEngine final {
     static int luaNpcGetActiveWeapon(lua_State* L);
     static int luaNpcGetActiveSpell(lua_State* L);
     static int luaNpcSetHealth(lua_State* L);
+    static int luaNpcDistanceTo(lua_State* L);
+    static int luaNpcFlee(lua_State* L);
+    static int luaNpcSetTarget(lua_State* L);
+    static int luaNpcAttack(lua_State* L);
+    static int luaNpcClearAI(lua_State* L);
 
     // Item Primitives
     static int luaItemGetDisplayName(lua_State* L);
@@ -208,6 +213,7 @@ class ScriptEngine final {
     static int luaWorldPlaySound(lua_State* L);
     static int luaWorldDay(lua_State* L);
     static int luaWorldPlayEffect(lua_State* L);
+    static int luaWorldFindNpcsInRange(lua_State* L);
 
     // Interactive Primitives
     static int luaInteractiveIsContainer(lua_State* L);

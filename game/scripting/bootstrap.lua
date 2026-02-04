@@ -95,6 +95,17 @@ function opengothic.World:isTime(startHour, startMin, endHour, endMin)
     end
 end
 
+-- Find NPCs near another NPC (convenience wrapper for findNpcsInRange)
+function opengothic.World:findNpcsNear(npc, range)
+    local x, y, z = npc:position()
+    return self:findNpcsInRange(x, y, z, range)
+end
+
+-- Check if NPC is sneaking
+function opengothic.Npc:isSneaking()
+    return self:walkMode() == opengothic.CONSTANTS.WalkBit.WM_Sneak
+end
+
 -- Test Framework
 opengothic.test = {
     _passed = 0,
