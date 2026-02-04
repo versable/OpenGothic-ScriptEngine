@@ -62,8 +62,8 @@ function opengothic.Npc:takeAllFrom(srcInv)
     local world = self:world()
     for _, item in ipairs(items) do
         if not item.equipped then
-            dstInv:transfer(srcInv, item.id, item.count, world)
-            table.insert(transferred, {name = item.name, count = item.count})
+            dstInv:transfer(srcInv, item:clsId(), item:count(), world)
+            table.insert(transferred, {name = item:displayName(), count = item:count()})
         end
     end
     return transferred
