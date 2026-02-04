@@ -67,6 +67,10 @@ class ScriptEngine final {
       lua_pushstring(L, arg);
       }
 
+    void pushDispatchArg(const std::string& arg) {
+      lua_pushstring(L, arg.c_str());
+      }
+
     template<typename... CppArgs, typename... LuaArgs>
     void bind(std::function<bool(CppArgs...)>& hook, const char* eventName, std::function<std::tuple<LuaArgs...>(CppArgs...)> argTransformer) {
       hook = [this, eventName, argTransformer](CppArgs... args) {

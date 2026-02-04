@@ -2612,6 +2612,10 @@ void ScriptEngine::bindHooks() {
     return std::make_tuple(&npc, &player);
     }));
 
+  bind(Gothic::inst().onDialogOption, "onDialogOption", std::function([](Npc& npc, Npc& player, std::string_view infoName) {
+    return std::make_tuple(&npc, &player, std::string(infoName));
+    }));
+
   bind(Gothic::inst().onSpellCast, "onSpellCast", std::function([](Npc& caster, Npc* target, int spellId) {
     return std::make_tuple(&caster, target, spellId);
     }));
@@ -2698,6 +2702,7 @@ void ScriptEngine::unbindHooks() {
   Gothic::inst().onNpcDeath      = nullptr;
   Gothic::inst().onItemPickup    = nullptr;
   Gothic::inst().onDialogStart   = nullptr;
+  Gothic::inst().onDialogOption  = nullptr;
   Gothic::inst().onSpellCast     = nullptr;
   Gothic::inst().onUseItem       = nullptr;
   Gothic::inst().onEquip         = nullptr;

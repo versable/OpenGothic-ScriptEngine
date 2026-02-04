@@ -180,6 +180,7 @@ class Gothic final {
     std::function<bool(Npc&, Npc*, bool)>                               onNpcDeath;      // victim, killer, isDeath (vs unconscious)
     std::function<bool(Npc&, Item&)>                                    onItemPickup;
     std::function<bool(Npc&, Npc&)>                                     onDialogStart;   // npc, player
+    std::function<bool(Npc&, Npc&, std::string_view)>                   onDialogOption;  // npc, player, infoName - return true to hide option
     std::function<bool(Npc&, Npc*, int)>                                onSpellCast;     // caster, target, spellId
     std::function<bool(Npc&, Item&)>                                    onUseItem;       // npc, item
     std::function<bool(Npc&, Item&)>                                    onEquip;         // npc, item

@@ -898,6 +898,20 @@ std::vector<GameScript::DlgChoice> GameScript::dialogChoices(std::shared_ptr<zen
       if(!valid)
         continue;
 
+      // Lua hook: allow scripts to hide specific dialog options
+      if(Gothic::inst().onDialogOption) {
+        auto* infoSymbol = vm.find_symbol_by_instance(info);
+        if(infoSymbol != nullptr) {
+          Npc* npcPtr    = findNpc(hnpc);
+          Npc* playerPtr = findNpc(player);
+          if(npcPtr != nullptr && playerPtr != nullptr) {
+            if(Gothic::inst().onDialogOption(*npcPtr, *playerPtr, infoSymbol->name())) {
+              continue; // Lua returned true, hide this option
+              }
+            }
+          }
+        }
+
       DlgChoice ch;
       ch.title    = info.description;
       ch.scriptFn = uint32_t(info.information);
