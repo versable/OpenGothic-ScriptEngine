@@ -54,7 +54,17 @@ function opengothic.DamageCalculator.calculate(attacker, victim, isSpell, spellI
     return opengothic.DamageCalculator.damageValue(attacker, victim, isSpell, dmg)
 end
 
--- Extend Npc with convenience methods
+-- ============================================================
+-- Lua Convenience Methods (using only non-Daedalus primitives)
+-- ============================================================
+
+-- Check if NPC matches a specific instance name
+function opengothic.Npc:isInstance(name)
+    local id = opengothic.resolve(name)
+    return id ~= nil and self:instanceId() == id
+end
+
+-- Transfer all non-equipped items from source inventory to this NPC
 function opengothic.Npc:takeAllFrom(srcInv)
     local items = srcInv:items()
     local transferred = {}
@@ -67,6 +77,22 @@ function opengothic.Npc:takeAllFrom(srcInv)
         end
     end
     return transferred
+end
+
+-- Check if current time is within a range (handles overnight ranges like 20:00 to 6:00)
+function opengothic.World:isTime(startHour, startMin, endHour, endMin)
+    local h, m = self:time()
+    local current = h * 60 + m
+    local startTime = startHour * 60 + startMin
+    local endTime = endHour * 60 + endMin
+
+    if startTime <= endTime then
+        -- Normal range (e.g., 8:00 to 18:00)
+        return current >= startTime and current < endTime
+    else
+        -- Overnight range (e.g., 20:00 to 6:00)
+        return current >= startTime or current < endTime
+    end
 end
 
 -- Test Framework
@@ -237,10 +263,6 @@ function opengothic.World:insertItem(itemName, waypoint)
     return self:findItem(itemId)
 end
 
--- Check if it's currently a specific time range
-function opengothic.World:isTime(startHour, startMin, endHour, endMin)
-    return opengothic.daedalus.call("Wld_IsTime", startHour, startMin, endHour, endMin) ~= 0
-end
 
 -- Sound helpers
 opengothic.sound = {}
