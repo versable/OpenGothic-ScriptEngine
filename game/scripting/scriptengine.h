@@ -15,6 +15,7 @@ class Npc;
 class Interactive;
 class Inventory;
 class World;
+class Serialize;
 
 class ScriptEngine final {
   public:
@@ -36,6 +37,9 @@ class ScriptEngine final {
       };
     ScriptData serialize() const;
     void deserialize(const ScriptData& data);
+
+    void save(Serialize& fout) const;
+    void load(Serialize& fin);
 
     std::vector<std::string> getLoadedScripts() const;
     void reloadAllScripts();

@@ -1,6 +1,51 @@
 -- OpenGothic Lua Bootstrap
 -- This file sets up the Lua scripting environment
 
+-- ============================================================
+-- Persistent Storage System
+-- ============================================================
+
+-- Storage table - modders put persistent data here
+opengothic.storage = {}
+
+-- Serialize storage to string map (called from C++)
+function opengothic._serializeStorage()
+    local result = {}
+    for key, value in pairs(opengothic.storage) do
+        if type(key) == "string" then
+            local t = type(value)
+            if t == "string" then
+                result[key] = "s:" .. value
+            elseif t == "number" then
+                result[key] = "n:" .. tostring(value)
+            elseif t == "boolean" then
+                result[key] = "b:" .. (value and "1" or "0")
+            -- Ignore other types (functions, tables, userdata)
+            end
+        end
+    end
+    return result
+end
+
+-- Deserialize storage from string map (called from C++)
+function opengothic._deserializeStorage(data)
+    opengothic.storage = {}
+    if not data then return end
+
+    for key, encoded in pairs(data) do
+        local typeChar = encoded:sub(1, 1)
+        local value = encoded:sub(3)
+
+        if typeChar == "s" then
+            opengothic.storage[key] = value
+        elseif typeChar == "n" then
+            opengothic.storage[key] = tonumber(value)
+        elseif typeChar == "b" then
+            opengothic.storage[key] = (value == "1")
+        end
+    end
+end
+
 -- Event system
 opengothic.events = {
     _handlers = {}

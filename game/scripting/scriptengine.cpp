@@ -15,6 +15,7 @@
 #include "game/inventory.h"
 #include "game/damagecalculator.h"
 #include "game/gamescript.h"
+#include "game/serialize.h"
 #include "graphics/effect.h"
 #include "commandline.h"
 #include "utils/fileutil.h"
@@ -414,13 +415,84 @@ std::string ScriptEngine::executeString(const std::string& code) {
 
 ScriptEngine::ScriptData ScriptEngine::serialize() const {
   ScriptData data;
-  // TODO: implement proper save state serialization
+
+  // Call Lua: opengothic._serializeStorage()
+  lua_getglobal(L, "opengothic");
+  lua_getfield(L, -1, "_serializeStorage");
+  if(lua_isfunction(L, -1)) {
+    if(lua_pcall(L, 0, 1, 0) == LUA_OK) {
+      // Result is table {key = "value", ...}
+      if(lua_istable(L, -1)) {
+        lua_pushnil(L);
+        while(lua_next(L, -2) != 0) {
+          if(lua_isstring(L, -2) && lua_isstring(L, -1)) {
+            const char* key = lua_tostring(L, -2);
+            const char* val = lua_tostring(L, -1);
+            data.globalData[key] = val;
+            }
+          lua_pop(L, 1);
+          }
+        }
+      lua_pop(L, 1); // result
+      } else {
+      Log::e("[ScriptEngine] Error calling _serializeStorage: ", lua_tostring(L, -1));
+      lua_pop(L, 1); // error
+      }
+    } else {
+    lua_pop(L, 1); // non-function
+    }
+  lua_pop(L, 1); // opengothic
+
   return data;
   }
 
 void ScriptEngine::deserialize(const ScriptData& data) {
-  // TODO: implement proper save state restoration
-  (void)data;
+  if(data.globalData.empty())
+    return;
+
+  // Build table from data
+  lua_newtable(L);
+  for(const auto& [key, value] : data.globalData) {
+    lua_pushstring(L, value.c_str());
+    lua_setfield(L, -2, key.c_str());
+    }
+
+  // Call Lua: opengothic._deserializeStorage(table)
+  lua_getglobal(L, "opengothic");
+  lua_getfield(L, -1, "_deserializeStorage");
+  if(lua_isfunction(L, -1)) {
+    lua_pushvalue(L, -3); // push the data table
+    if(lua_pcall(L, 1, 0, 0) != LUA_OK) {
+      Log::e("[ScriptEngine] Error calling _deserializeStorage: ", lua_tostring(L, -1));
+      lua_pop(L, 1); // error
+      }
+    } else {
+    lua_pop(L, 1); // non-function
+    }
+  lua_pop(L, 2); // opengothic, data table
+  }
+
+void ScriptEngine::save(Serialize& fout) const {
+  ScriptData data = serialize();
+  uint32_t count = static_cast<uint32_t>(data.globalData.size());
+  fout.write(count);
+  for(const auto& [key, value] : data.globalData) {
+    fout.write(key);
+    fout.write(value);
+    }
+  }
+
+void ScriptEngine::load(Serialize& fin) {
+  ScriptData data;
+  uint32_t count = 0;
+  fin.read(count);
+  for(uint32_t i = 0; i < count; ++i) {
+    std::string key, value;
+    fin.read(key);
+    fin.read(value);
+    data.globalData[key] = value;
+    }
+  deserialize(data);
   }
 
 std::vector<std::string> ScriptEngine::getLoadedScripts() const {

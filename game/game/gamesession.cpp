@@ -161,6 +161,13 @@ GameSession::GameSession(Serialize &fin) {
   fin.setEntry("game/daedalus");
   vm->loadVar(fin);
 
+  // Load Lua script state (optional - may not exist in old saves)
+  if(auto* lua = Gothic::inst().luaScript()) {
+    if(fin.setEntry("game/lua")) {
+      lua->load(fin);
+      }
+    }
+
   if(auto hero = wrld->player())
     vm->setInstanceNPC("HERO",*hero);
 
@@ -222,6 +229,13 @@ void GameSession::save(Serialize &fout, std::string_view name, const Pixmap& scr
 
   fout.setEntry("game/daedalus");
   vm->saveVar(fout);
+
+  // Save Lua script state
+  if(auto* lua = Gothic::inst().luaScript()) {
+    fout.setEntry("game/lua");
+    lua->save(fout);
+    }
+
   Gothic::inst().setLoadingProgress(80);
   }
 
