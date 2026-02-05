@@ -110,6 +110,7 @@ class ScriptEngine final {
   public:
     static int luaPrint(lua_State* L);
     static int luaPrintMessage(lua_State* L);
+    static int luaPrintScreen(lua_State* L);
 
     static int luaInventoryGetItems(lua_State* L);
     static int luaInventoryTransfer(lua_State* L);

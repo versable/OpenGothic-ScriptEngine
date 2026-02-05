@@ -79,6 +79,14 @@ function opengothic.printMessage(msg)
     opengothic._printMessage(msg)
 end
 
+-- Print message at screen position
+-- x, y: position in percent (0-100), use -1 to center
+-- time: display duration in seconds (default 5)
+-- font: font name (default "font_old_10_white.tga")
+function opengothic.printScreen(msg, x, y, time, font)
+    opengothic._printScreen(msg, x, y, time or 5, font or "font_old_10_white.tga")
+end
+
 -- DamageCalculator convenience: combines primitives for common case
 function opengothic.DamageCalculator.calculate(attacker, victim, isSpell, spellId)
     local dmg = {}

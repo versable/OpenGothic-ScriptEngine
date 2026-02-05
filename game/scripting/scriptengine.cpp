@@ -20,6 +20,7 @@
 #include "commandline.h"
 #include "utils/fileutil.h"
 #include "gothic.h"
+#include "resources.h"
 
 #include <Tempest/Dir>
 #include <Tempest/TextCodec>
@@ -565,6 +566,18 @@ void ScriptEngine::loadModScripts() {
 int ScriptEngine::luaPrintMessage(lua_State* L) {
   const char* msg = luaL_checkstring(L, 1);
   Gothic::inst().onPrint(msg);
+  return 0;
+  }
+
+int ScriptEngine::luaPrintScreen(lua_State* L) {
+  const char* msg = luaL_checkstring(L, 1);
+  int x = static_cast<int>(luaL_checkinteger(L, 2));
+  int y = static_cast<int>(luaL_checkinteger(L, 3));
+  int timesec = static_cast<int>(luaL_optinteger(L, 4, 5));
+  const char* font = luaL_optstring(L, 5, "font_old_10_white.tga");
+
+  auto& fnt = Resources::font(font, Resources::FontType::Normal, 1);
+  Gothic::inst().onPrintScreen(msg, x, y, timesec, fnt);
   return 0;
   }
 
@@ -2631,6 +2644,9 @@ void ScriptEngine::registerInternalAPI() {
 
   lua_pushcfunction(L, luaPrintMessage, "_printMessage");
   lua_setfield(L, -2, "_printMessage");
+
+  lua_pushcfunction(L, luaPrintScreen, "_printScreen");
+  lua_setfield(L, -2, "_printScreen");
 
   // Register DamageCalculator as opengothic.DamageCalculator
   lua_newtable(L);
