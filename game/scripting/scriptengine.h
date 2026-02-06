@@ -205,6 +205,7 @@ class ScriptEngine final {
     static int luaItemGetProtection(lua_State* L);
     static int luaItemGetRange(lua_State* L);
     static int luaItemGetFlags(lua_State* L);
+    static int luaItemGetPosition(lua_State* L);
 
     // World Primitives
     static int luaWorldTime(lua_State* L);
@@ -229,6 +230,9 @@ class ScriptEngine final {
     static int luaWorldFindNpcsInRange(lua_State* L);
     static int luaWorldFindNpcsNear(lua_State* L);
     static int luaWorldFindNearestNpc(lua_State* L);
+    static int luaWorldDetectItemsInRange(lua_State* L);
+    static int luaWorldDetectItemsNear(lua_State* L);
+    static int luaWorldFindNearestItem(lua_State* L);
 
     // Interactive Primitives
     static int luaInteractiveIsContainer(lua_State* L);

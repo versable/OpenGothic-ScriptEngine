@@ -936,6 +936,23 @@ local function _isInventory(value)
     return ok and type(result) == "table"
 end
 
+local function _isItem(value)
+    local core = opengothic.core
+    if core and type(core.isItem) == "function" then
+        return core.isItem(value)
+    end
+
+    if value == nil then
+        return false
+    end
+
+    local ok, result = pcall(function()
+        return value:clsId()
+    end)
+
+    return ok and type(result) == "number"
+end
+
 function opengothic.ai.attackTarget(npc, target)
     if not _isNpc(npc) or not _isNpc(target) then
         return false, "invalid_npc_or_target"
@@ -1194,6 +1211,78 @@ function opengothic.worldutil.findNearestNpc(origin, range, predicate)
                     if nearestDist == nil or dist < nearestDist then
                         nearest = npc
                         nearestDist = dist
+                    end
+                end
+            end
+        end
+    end
+
+    return nearest
+end
+
+function opengothic.worldutil.findNearestItem(origin, range, predicate)
+    if not _isNpc(origin) or type(range) ~= "number" or range <= 0 then
+        return nil
+    end
+
+    if predicate ~= nil and type(predicate) ~= "function" then
+        return nil
+    end
+
+    local worldOk, world = pcall(function()
+        return origin:world()
+    end)
+    if not worldOk then
+        return nil
+    end
+
+    if predicate == nil then
+        local nearestOk, nearest = pcall(function()
+            return world:findNearestItem(origin, range)
+        end)
+        if nearestOk then
+            return nearest
+        end
+    end
+
+    local originPosOk, ox, oy, oz = pcall(function()
+        return origin:position()
+    end)
+    if not originPosOk then
+        return nil
+    end
+
+    local listOk, items = pcall(function()
+        return world:detectItemsNear(origin, range)
+    end)
+    if not listOk or type(items) ~= "table" then
+        return nil
+    end
+
+    local nearest = nil
+    local nearestQDist = nil
+
+    for _, item in ipairs(items) do
+        if _isItem(item) then
+            local pass = true
+
+            if predicate ~= nil then
+                local predOk, predVal = pcall(predicate, item)
+                pass = predOk and predVal == true
+            end
+
+            if pass then
+                local itemPosOk, ix, iy, iz = pcall(function()
+                    return item:position()
+                end)
+                if itemPosOk then
+                    local dx = ox - ix
+                    local dy = oy - iy
+                    local dz = oz - iz
+                    local qDist = dx * dx + dy * dy + dz * dz
+                    if nearestQDist == nil or qDist < nearestQDist then
+                        nearest = item
+                        nearestQDist = qDist
                     end
                 end
             end

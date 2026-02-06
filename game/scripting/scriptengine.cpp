@@ -1635,6 +1635,78 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
+  int ScriptEngine::luaWorldDetectItemsInRange(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    float x = static_cast<float>(luaL_checknumber(L, 2));
+    float y = static_cast<float>(luaL_checknumber(L, 3));
+    float z = static_cast<float>(luaL_checknumber(L, 4));
+    float range = static_cast<float>(luaL_checknumber(L, 5));
+
+    lua_newtable(L);
+    if(!world || range <= 0.f) {
+      return 1;
+      }
+
+    int idx = 1;
+    world->detectItem(Tempest::Vec3(x, y, z), range, [L, &idx](Item& item) {
+      Lua::push(L, &item);
+      Lua::setMetatable(L, "Item");
+      lua_rawseti(L, -2, idx++);
+      });
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldDetectItemsNear(lua_State* L) {
+    auto* world  = Lua::check<World>(L, 1, "World");
+    auto* origin = Lua::check<Npc>(L, 2, "Npc");
+    float range  = static_cast<float>(luaL_checknumber(L, 3));
+
+    lua_newtable(L);
+    if(!world || !origin || range <= 0.f) {
+      return 1;
+      }
+
+    const auto pos = origin->position();
+    int idx = 1;
+    world->detectItem(pos, range, [L, &idx](Item& item) {
+      Lua::push(L, &item);
+      Lua::setMetatable(L, "Item");
+      lua_rawseti(L, -2, idx++);
+      });
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldFindNearestItem(lua_State* L) {
+    auto* world  = Lua::check<World>(L, 1, "World");
+    auto* origin = Lua::check<Npc>(L, 2, "Npc");
+    float range  = static_cast<float>(luaL_checknumber(L, 3));
+
+    if(!world || !origin || range <= 0.f) {
+      lua_pushnil(L);
+      return 1;
+      }
+
+    Item* nearest = nullptr;
+    float nearestQDist = std::numeric_limits<float>::max();
+    const auto pos = origin->position();
+
+    world->detectItem(pos, range, [&](Item& item) {
+      float qDist = origin->qDistTo(item);
+      if(qDist < nearestQDist) {
+        nearestQDist = qDist;
+        nearest = &item;
+        }
+      });
+
+    if(nearest) {
+      Lua::push(L, nearest);
+      Lua::setMetatable(L, "Item");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
   int ScriptEngine::luaInteractiveDetach(lua_State* L) {
     auto* inter = Lua::check<Interactive>(L, 1, "Interactive");
     auto* npc = Lua::check<Npc>(L, 2, "Npc");
@@ -2846,9 +2918,25 @@ static const luaL_Reg inventory_meta[] = {
     return 1;
     }
 
+  int ScriptEngine::luaItemGetPosition(lua_State* L) {
+    auto* item = Lua::check<Item>(L, 1, "Item");
+    if(!item) {
+      lua_pushnumber(L, 0.0f);
+      lua_pushnumber(L, 0.0f);
+      lua_pushnumber(L, 0.0f);
+      return 3;
+      }
+    Tempest::Vec3 pos = item->position();
+    lua_pushnumber(L, pos.x);
+    lua_pushnumber(L, pos.y);
+    lua_pushnumber(L, pos.z);
+    return 3;
+    }
+
 static const luaL_Reg item_meta[] = {
     {"displayName",     &ScriptEngine::luaItemGetDisplayName},
     {"description",     &ScriptEngine::luaItemGetDescription},
+    {"position",        &ScriptEngine::luaItemGetPosition},
     {"cost",            &ScriptEngine::luaItemGetCost},
     {"sellCost",        &ScriptEngine::luaItemGetSellCost},
     {"count",           &ScriptEngine::luaItemGetCount},
@@ -2900,6 +2988,9 @@ void ScriptEngine::registerInternalAPI() {
     {"findNpcsInRange",  &ScriptEngine::luaWorldFindNpcsInRange},
     {"findNpcsNear",     &ScriptEngine::luaWorldFindNpcsNear},
     {"findNearestNpc",   &ScriptEngine::luaWorldFindNearestNpc},
+    {"detectItemsInRange", &ScriptEngine::luaWorldDetectItemsInRange},
+    {"detectItemsNear",    &ScriptEngine::luaWorldDetectItemsNear},
+    {"findNearestItem",    &ScriptEngine::luaWorldFindNearestItem},
     {nullptr,            nullptr}
     };
   static const luaL_Reg empty[] = {{nullptr, nullptr}};
