@@ -72,6 +72,10 @@ GameSession::GameSession(std::string file) {
 
   Gothic::inst().setLoadingProgress(0);
   setupSettings();
+  if(auto* lua = Gothic::inst().luaScript()) {
+    // New game starts with empty persistent Lua storage.
+    lua->deserialize({});
+    }
   setTime(gtime(8,0));
 
   vm.reset(new GameScript(*this));
@@ -161,8 +165,10 @@ GameSession::GameSession(Serialize &fin) {
   fin.setEntry("game/daedalus");
   vm->loadVar(fin);
 
-  // Load Lua script state (optional - may not exist in old saves)
+  // Load Lua script state (optional - may not exist in old saves).
+  // Always clear storage first to avoid leaking values across sessions.
   if(auto* lua = Gothic::inst().luaScript()) {
+    lua->deserialize({});
     if(fin.setEntry("game/lua")) {
       lua->load(fin);
       }

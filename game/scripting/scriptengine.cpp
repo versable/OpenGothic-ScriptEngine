@@ -448,7 +448,7 @@ ScriptEngine::ScriptData ScriptEngine::serialize() const {
   }
 
 void ScriptEngine::deserialize(const ScriptData& data) {
-  if(data.globalData.empty())
+  if(!L)
     return;
 
   // Build table from data
@@ -1901,8 +1901,12 @@ static const luaL_Reg inventory_meta[] = {
       return 0;
       }
 
-    // Store previous context
-    std::shared_ptr<zenkit::DaedalusInstance> prevSelf, prevOther, prevVictim, prevItem;
+    // Store previous context. We always restore these values after the call,
+    // including explicit/null context values.
+    std::shared_ptr<zenkit::DaedalusInstance> prevSelf   = vm.global_self()->get_instance();
+    std::shared_ptr<zenkit::DaedalusInstance> prevOther  = vm.global_other()->get_instance();
+    std::shared_ptr<zenkit::DaedalusInstance> prevVictim = vm.global_victim()->get_instance();
+    std::shared_ptr<zenkit::DaedalusInstance> prevItem   = vm.global_item()->get_instance();
     setContextFromTable(L, 2, vm, world, prevSelf, prevOther, prevVictim, prevItem);
 
     // Gather arguments from Lua stack (start at index 3)
@@ -1964,19 +1968,19 @@ static const luaL_Reg inventory_meta[] = {
       }
     catch(const std::exception& e) {
       // Restore context before error
-      if(prevSelf)   vm.global_self()->set_instance(prevSelf);
-      if(prevOther)  vm.global_other()->set_instance(prevOther);
-      if(prevVictim) vm.global_victim()->set_instance(prevVictim);
-      if(prevItem)   vm.global_item()->set_instance(prevItem);
+      vm.global_self()->set_instance(prevSelf);
+      vm.global_other()->set_instance(prevOther);
+      vm.global_victim()->set_instance(prevVictim);
+      vm.global_item()->set_instance(prevItem);
       luaL_error(L, "vm.callWithContext: error calling '%s': %s", funcName, e.what());
       return 0;
       }
 
     // Restore context
-    if(prevSelf)   vm.global_self()->set_instance(prevSelf);
-    if(prevOther)  vm.global_other()->set_instance(prevOther);
-    if(prevVictim) vm.global_victim()->set_instance(prevVictim);
-    if(prevItem)   vm.global_item()->set_instance(prevItem);
+    vm.global_self()->set_instance(prevSelf);
+    vm.global_other()->set_instance(prevOther);
+    vm.global_victim()->set_instance(prevVictim);
+    vm.global_item()->set_instance(prevItem);
 
     return result;
     }
@@ -2705,6 +2709,11 @@ namespace {
 
 template<class T>
 void ScriptEngine::pushDispatchArg(T* arg) {
+  if(arg == nullptr) {
+    lua_pushnil(L);
+    return;
+    }
+
   const char* metatableName = getMetatableName<std::remove_const_t<T>>();
   if(metatableName) {
     Lua::push(L, const_cast<std::remove_const_t<T>*>(arg));
