@@ -977,6 +977,50 @@ function opengothic.ai.flee(npc)
     return true, nil
 end
 
+function opengothic.ai.fleeFrom(npc, target, opts)
+    if not _isNpc(npc) or not _isNpc(target) then
+        return false, "invalid_npc_or_target"
+    end
+
+    local setRunMode = true
+    local runMode = nil
+    if type(opts) == "table" then
+        if opts.setRunMode == false then
+            setRunMode = false
+        end
+        if type(opts.runMode) == "number" then
+            runMode = opts.runMode
+        end
+    end
+
+    if runMode == nil and opengothic.CONSTANTS and opengothic.CONSTANTS.WalkBit then
+        runMode = opengothic.CONSTANTS.WalkBit.WM_Run or opengothic.CONSTANTS.WalkBit.WM_RUN
+    end
+
+    if setRunMode and type(runMode) == "number" then
+        -- Best-effort: walking mode should not prevent fleeing if it fails.
+        pcall(function()
+            npc:setWalkMode(runMode)
+        end)
+    end
+
+    local okSet = pcall(function()
+        npc:setTarget(target)
+    end)
+    if not okSet then
+        return false, "set_target_failed"
+    end
+
+    local okFlee = pcall(function()
+        npc:flee()
+    end)
+    if not okFlee then
+        return false, "flee_failed"
+    end
+
+    return true, nil
+end
+
 function opengothic.ai.reset(npc)
     if not _isNpc(npc) then
         return false, "invalid_npc"

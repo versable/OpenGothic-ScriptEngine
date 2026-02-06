@@ -11,6 +11,7 @@ opengothic.events.register("onWorldLoaded", function()
     test.assert_type(opengothic.ai, "table", "opengothic.ai module exists")
     test.assert_type(opengothic.ai.attackTarget, "function", "attackTarget exists")
     test.assert_type(opengothic.ai.flee, "function", "flee exists")
+    test.assert_type(opengothic.ai.fleeFrom, "function", "fleeFrom exists")
     test.assert_type(opengothic.ai.reset, "function", "reset exists")
     test.assert_type(opengothic.ai.isCombatReady, "function", "isCombatReady exists")
 
@@ -27,11 +28,23 @@ opengothic.events.register("onWorldLoaded", function()
     test.assert_eq(ok, false, "flee rejects nil npc")
     test.assert_type(err, "string", "flee returns error string")
 
+    ok, err = opengothic.ai.fleeFrom(nil, nil)
+    test.assert_eq(ok, false, "fleeFrom rejects nil args")
+    test.assert_type(err, "string", "fleeFrom returns error string")
+
+    ok, err = opengothic.ai.fleeFrom(player, nil)
+    test.assert_eq(ok, false, "fleeFrom rejects nil target")
+    test.assert_type(err, "string", "fleeFrom invalid target error string")
+
     ok, err = opengothic.ai.reset(nil)
     test.assert_eq(ok, false, "reset rejects nil npc")
     test.assert_type(err, "string", "reset returns error string")
 
     -- Valid path with minimal side effects
+    ok, err = opengothic.ai.fleeFrom(player, player, { setRunMode = false })
+    test.assert_eq(ok, true, "fleeFrom succeeds for valid npc/target")
+    test.assert_true(err == nil, "fleeFrom returns nil error on success")
+
     ok, err = opengothic.ai.reset(player)
     test.assert_eq(ok, true, "reset succeeds for player")
     test.assert_true(err == nil, "reset returns nil error on success")
