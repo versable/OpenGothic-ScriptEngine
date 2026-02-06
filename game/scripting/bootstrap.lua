@@ -887,22 +887,7 @@ end
 
 -- Check if NPC has items
 function opengothic.Npc:hasItem(itemName, minCount)
-    minCount = minCount or 1
-    local itemId = opengothic.resolve(itemName)
-    if type(itemId) ~= "number" then
-        return false
-    end
-
-    local inventory = self:inventory()
-    if inventory == nil then
-        return false
-    end
-
-    local ok, count = pcall(function()
-        return inventory:itemCount(itemId)
-    end)
-
-    return ok and type(count) == "number" and count >= minCount
+    return opengothic.inventory.hasItem(self, itemName, minCount)
 end
 
 -- AI helper module (safe high-level wrappers around NPC primitives)
@@ -1034,6 +1019,51 @@ end
 -- Inventory/world utility helper modules (safe wrappers around primitives)
 opengothic.inventory = {}
 opengothic.worldutil = {}
+
+function opengothic.inventory.hasItem(owner, itemRef, minCount)
+    minCount = minCount or 1
+    if type(minCount) ~= "number" or minCount <= 0 then
+        return false
+    end
+
+    local inventory = nil
+    if _isNpc(owner) then
+        local invOk, inv = pcall(function()
+            return owner:inventory()
+        end)
+        if invOk then
+            inventory = inv
+        end
+    elseif _isInventory(owner) then
+        inventory = owner
+    end
+
+    if not _isInventory(inventory) then
+        return false
+    end
+
+    local itemId = nil
+    if type(itemRef) == "string" then
+        itemId = opengothic.resolve(itemRef)
+    elseif type(itemRef) == "number" then
+        itemId = itemRef
+    else
+        return false
+    end
+
+    if type(itemId) ~= "number" or itemId < 0 then
+        return false
+    end
+
+    local countOk, count = pcall(function()
+        return inventory:itemCount(itemId)
+    end)
+    if not countOk or type(count) ~= "number" then
+        return false
+    end
+
+    return count >= minCount
+end
 
 function opengothic.inventory.transferByPredicate(dstNpc, srcInv, predicate, opts)
     if not _isNpc(dstNpc) or not _isInventory(srcInv) then

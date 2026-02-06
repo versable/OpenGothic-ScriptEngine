@@ -10,6 +10,7 @@ opengothic.events.register("onWorldLoaded", function()
     local inv = player and player:inventory() or nil
 
     test.assert_type(opengothic.inventory, "table", "opengothic.inventory module exists")
+    test.assert_type(opengothic.inventory.hasItem, "function", "hasItem exists")
     test.assert_type(opengothic.inventory.transferAll, "function", "transferAll exists")
     test.assert_type(opengothic.inventory.transferByPredicate, "function", "transferByPredicate exists")
     test.assert_type(opengothic.worldutil, "table", "opengothic.worldutil module exists")
@@ -21,6 +22,15 @@ opengothic.events.register("onWorldLoaded", function()
     test.assert_type(moved, "table", "transferAll invalid args returns table")
     test.assert_eq(#moved, 0, "transferAll invalid args returns empty list")
     test.assert_type(err, "string", "transferAll invalid args returns error")
+
+    local hasItem = opengothic.inventory.hasItem(nil, "ITFO_APPLE")
+    test.assert_eq(hasItem, false, "hasItem rejects nil owner")
+
+    hasItem = opengothic.inventory.hasItem(player, nil)
+    test.assert_eq(hasItem, false, "hasItem rejects nil item reference")
+
+    hasItem = opengothic.inventory.hasItem(player, "ITFO_APPLE", 0)
+    test.assert_eq(hasItem, false, "hasItem rejects invalid minimum count")
 
     moved, err = opengothic.inventory.transferByPredicate(player, inv, "not_a_function")
     test.assert_type(moved, "table", "transferByPredicate invalid predicate returns table")
@@ -46,6 +56,15 @@ opengothic.events.register("onWorldLoaded", function()
     test.assert_type(moved, "table", "transferByPredicate returns moved-items list")
     test.assert_eq(#moved, 0, "always-false predicate results in no transfer")
     test.assert_true(err == nil, "transferByPredicate success returns nil error")
+
+    hasItem = opengothic.inventory.hasItem(player, "ITFO_APPLE")
+    test.assert_type(hasItem, "boolean", "hasItem supports symbol-name lookup")
+
+    hasItem = opengothic.inventory.hasItem(inv, opengothic.resolve("ITFO_APPLE"))
+    test.assert_type(hasItem, "boolean", "hasItem supports inventory + numeric id")
+
+    hasItem = player:hasItem("ITFO_APPLE")
+    test.assert_type(hasItem, "boolean", "Npc:hasItem delegates to inventory.hasItem")
 
     -- Valid path for nearest lookup; result may be nil depending on nearby NPCs
     nearest = opengothic.worldutil.findNearestNpc(player, 5000)
