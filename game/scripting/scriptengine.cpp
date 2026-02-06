@@ -47,7 +47,10 @@ namespace Lua {
 
   template<typename T>
   T* to(lua_State* L, int idx) {
-    return *reinterpret_cast<T**>(lua_touserdata(L, idx));
+    auto** ptr = reinterpret_cast<T**>(lua_touserdata(L, idx));
+    if(ptr == nullptr)
+      return nullptr;
+    return *ptr;
     }
 
   template<typename T>

@@ -83,6 +83,9 @@ function opengothic.events.unregister(eventName, handlerId)
 
     for i, entry in ipairs(handlers) do
         if entry.id == handlerId then
+            if entry.callback == nil then
+                return false
+            end
             entry.callback = nil
             return true
         end
@@ -711,6 +714,13 @@ end
 -- Check if NPC appears talkable for dialog flow guards
 function opengothic.dialog.canTalkTo(npc)
     if not _dialogIsNpc(npc) then
+        return false
+    end
+
+    local playerTargetOk, isPlayerTarget = pcall(function()
+        return npc:isPlayer()
+    end)
+    if playerTargetOk and isPlayerTarget then
         return false
     end
 

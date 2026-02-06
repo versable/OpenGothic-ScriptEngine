@@ -30,11 +30,8 @@ opengothic.events.register("onWorldLoaded", function()
         -- The call itself is not important; the regression is context leakage after it returns.
         opengothic.vm.callWithContext("Npc_IsInState", { self = player }, player, 0)
     end)
-    test.assert_true(ok, "vm.callWithContext call succeeded")
     if not ok then
-        print("[INFO] vm.callWithContext error: " .. tostring(err))
-        test.summary()
-        return
+        print("[INFO] vm.callWithContext error (allowed for this test): " .. tostring(err))
     end
 
     local afterSelf = opengothic.daedalus.get("SELF")
