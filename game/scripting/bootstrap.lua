@@ -364,6 +364,111 @@ function opengothic.timer.cancel(taskId)
     return existed
 end
 
+-- Bridge ergonomics wrappers (non-throwing helpers over bridge primitives)
+opengothic.daedalus = opengothic.daedalus or {}
+opengothic.vm = opengothic.vm or {}
+
+local function _bridgeIsNpc(value)
+    local core = opengothic.core
+    if core and type(core.isNpc) == "function" then
+        return core.isNpc(value)
+    end
+
+    if value == nil then
+        return false
+    end
+
+    local ok, result = pcall(function()
+        return value:isPlayer()
+    end)
+
+    return ok and type(result) == "boolean"
+end
+
+function opengothic.daedalus.tryCall(funcName, ...)
+    if type(funcName) ~= "string" or funcName == "" then
+        return false, nil, "invalid_function_name"
+    end
+
+    local ok, result = pcall(opengothic.daedalus.call, funcName, ...)
+    if not ok then
+        return false, nil, tostring(result)
+    end
+
+    return true, result, nil
+end
+
+function opengothic.daedalus.trySet(symbolName, value, index)
+    if type(symbolName) ~= "string" or symbolName == "" then
+        return false, "invalid_symbol_name"
+    end
+
+    if index ~= nil and type(index) ~= "number" then
+        return false, "invalid_index"
+    end
+
+    local ok, err = pcall(opengothic.daedalus.set, symbolName, value, index)
+    if not ok then
+        return false, tostring(err)
+    end
+
+    return true, nil
+end
+
+function opengothic.daedalus.exists(symbolName)
+    if type(symbolName) ~= "string" or symbolName == "" then
+        return false
+    end
+
+    local vm = opengothic.vm
+    if type(vm) ~= "table" or type(vm.getSymbol) ~= "function" then
+        return false
+    end
+
+    local ok, sym = pcall(vm.getSymbol, symbolName)
+    if not ok then
+        return false
+    end
+
+    return sym ~= nil
+end
+
+function opengothic.vm.callContextSafe(funcName, context, ...)
+    if type(funcName) ~= "string" or funcName == "" or type(context) ~= "table" then
+        return false, nil, "invalid_args"
+    end
+
+    local ok, result = pcall(opengothic.vm.callWithContext, funcName, context, ...)
+    if not ok then
+        return false, nil, tostring(result)
+    end
+
+    return true, result, nil
+end
+
+function opengothic.vm.callSelf(funcName, selfNpc, ...)
+    if not _bridgeIsNpc(selfNpc) then
+        return false, nil, "invalid_self"
+    end
+
+    return opengothic.vm.callContextSafe(funcName, { self = selfNpc }, ...)
+end
+
+function opengothic.vm.callSelfOther(funcName, selfNpc, otherNpc, ...)
+    if not _bridgeIsNpc(selfNpc) then
+        return false, nil, "invalid_self"
+    end
+
+    if not _bridgeIsNpc(otherNpc) then
+        return false, nil, "invalid_other"
+    end
+
+    return opengothic.vm.callContextSafe(funcName, {
+        self = selfNpc,
+        other = otherNpc
+    }, ...)
+end
+
 -- DamageCalculator convenience: combines primitives for common case
 function opengothic.DamageCalculator.calculate(attacker, victim, isSpell, spellId)
     local dmg = {}
