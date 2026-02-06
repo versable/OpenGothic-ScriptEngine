@@ -48,14 +48,47 @@ end
 
 -- Event system
 opengothic.events = {
-    _handlers = {}
+    _handlers = {},
+    _nextHandlerId = 1
 }
 
 function opengothic.events.register(eventName, callback)
+    if type(eventName) ~= "string" or type(callback) ~= "function" then
+        return nil
+    end
+
     if not opengothic.events._handlers[eventName] then
         opengothic.events._handlers[eventName] = {}
     end
-    table.insert(opengothic.events._handlers[eventName], callback)
+
+    local handlerId = opengothic.events._nextHandlerId
+    opengothic.events._nextHandlerId = handlerId + 1
+    table.insert(opengothic.events._handlers[eventName], {
+        id = handlerId,
+        callback = callback
+    })
+
+    return handlerId
+end
+
+function opengothic.events.unregister(eventName, handlerId)
+    if type(eventName) ~= "string" or type(handlerId) ~= "number" then
+        return false
+    end
+
+    local handlers = opengothic.events._handlers[eventName]
+    if not handlers then
+        return false
+    end
+
+    for i, entry in ipairs(handlers) do
+        if entry.id == handlerId then
+            entry.callback = nil
+            return true
+        end
+    end
+
+    return false
 end
 
 -- Called from C++ to dispatch events
@@ -65,10 +98,12 @@ function opengothic._dispatchEvent(eventName, ...)
         return false
     end
 
-    for _, handler in ipairs(handlers) do
-        local handled = handler(...)
-        if handled then
-            return true
+    for _, entry in ipairs(handlers) do
+        if entry.callback ~= nil then
+            local handled = entry.callback(...)
+            if handled then
+                return true
+            end
         end
     end
     return false
@@ -156,8 +191,9 @@ opengothic.timer = {
     _nextId = 1,
     _tasks = {},
     _order = {},
-    _hookRegistered = false,
-    _lastMinuteStamp = nil
+    _dirtyOrder = false,
+    _updateHookId = nil,
+    _minuteHookId = nil
 }
 
 local function _timerRunTask(taskId, task)
@@ -167,12 +203,41 @@ local function _timerRunTask(taskId, task)
     end
 end
 
+local function _timerCompactOrder()
+    if not opengothic.timer._dirtyOrder then
+        return
+    end
+
+    local compact = {}
+    for _, taskId in ipairs(opengothic.timer._order) do
+        if opengothic.timer._tasks[taskId] ~= nil then
+            table.insert(compact, taskId)
+        end
+    end
+    opengothic.timer._order = compact
+    opengothic.timer._dirtyOrder = false
+end
+
+local function _timerMarkRemoved(taskId)
+    if opengothic.timer._tasks[taskId] ~= nil then
+        opengothic.timer._tasks[taskId] = nil
+        opengothic.timer._dirtyOrder = true
+    end
+end
+
+local function _timerHasTasks()
+    return next(opengothic.timer._tasks) ~= nil
+end
+
+local _timerMaybeReleaseHooks
+
 local function _timerOnUpdate(dt)
     if type(dt) ~= "number" or dt < 0 then
         dt = 0
     end
 
-    -- Realtime timers
+    _timerCompactOrder()
+
     for _, taskId in ipairs(opengothic.timer._order) do
         local task = opengothic.timer._tasks[taskId]
         if task and task.kind == "realtime" then
@@ -189,49 +254,53 @@ local function _timerOnUpdate(dt)
                 end
             elseif task.remaining <= 0 then
                 _timerRunTask(taskId, task)
-                opengothic.timer._tasks[taskId] = nil
+                _timerMarkRemoved(taskId)
             end
         end
     end
 
-    -- Game-minute timers
-    local world = opengothic.world()
-    if not world then
-        opengothic.timer._lastMinuteStamp = nil
-        return false
-    end
-
-    local hour, minute = world:time()
-    if type(hour) ~= "number" or type(minute) ~= "number" then
-        return false
-    end
-
-    local stamp = hour * 60 + minute
-    if opengothic.timer._lastMinuteStamp == nil then
-        opengothic.timer._lastMinuteStamp = stamp
-        return false
-    end
-
-    if stamp ~= opengothic.timer._lastMinuteStamp then
-        opengothic.timer._lastMinuteStamp = stamp
-        for _, taskId in ipairs(opengothic.timer._order) do
-            local task = opengothic.timer._tasks[taskId]
-            if task and task.kind == "game_minute" then
-                _timerRunTask(taskId, task)
-            end
-        end
-    end
-
+    _timerCompactOrder()
+    _timerMaybeReleaseHooks()
     return false
 end
 
-local function _timerEnsureHook()
-    if opengothic.timer._hookRegistered then
+local function _timerOnGameMinuteChanged(day, hour, minute)
+    _timerCompactOrder()
+
+    for _, taskId in ipairs(opengothic.timer._order) do
+        local task = opengothic.timer._tasks[taskId]
+        if task and task.kind == "game_minute" then
+            _timerRunTask(taskId, task)
+        end
+    end
+
+    _timerCompactOrder()
+    _timerMaybeReleaseHooks()
+    return false
+end
+
+local function _timerEnsureHooks()
+    if opengothic.timer._updateHookId == nil then
+        opengothic.timer._updateHookId = opengothic.events.register("onUpdate", _timerOnUpdate)
+    end
+    if opengothic.timer._minuteHookId == nil then
+        opengothic.timer._minuteHookId = opengothic.events.register("onGameMinuteChanged", _timerOnGameMinuteChanged)
+    end
+end
+
+_timerMaybeReleaseHooks = function()
+    if _timerHasTasks() then
         return
     end
 
-    opengothic.events.register("onUpdate", _timerOnUpdate)
-    opengothic.timer._hookRegistered = true
+    if opengothic.timer._updateHookId ~= nil then
+        opengothic.events.unregister("onUpdate", opengothic.timer._updateHookId)
+        opengothic.timer._updateHookId = nil
+    end
+    if opengothic.timer._minuteHookId ~= nil then
+        opengothic.events.unregister("onGameMinuteChanged", opengothic.timer._minuteHookId)
+        opengothic.timer._minuteHookId = nil
+    end
 end
 
 local function _timerCreateTask(task)
@@ -239,7 +308,7 @@ local function _timerCreateTask(task)
     opengothic.timer._nextId = taskId + 1
     opengothic.timer._tasks[taskId] = task
     table.insert(opengothic.timer._order, taskId)
-    _timerEnsureHook()
+    _timerEnsureHooks()
     return taskId
 end
 
@@ -288,12 +357,11 @@ function opengothic.timer.cancel(taskId)
         return false
     end
 
-    if opengothic.timer._tasks[taskId] ~= nil then
-        opengothic.timer._tasks[taskId] = nil
-        return true
-    end
-
-    return false
+    local existed = opengothic.timer._tasks[taskId] ~= nil
+    _timerMarkRemoved(taskId)
+    _timerCompactOrder()
+    _timerMaybeReleaseHooks()
+    return existed
 end
 
 -- DamageCalculator convenience: combines primitives for common case
@@ -324,43 +392,6 @@ end
 function opengothic.Npc:isInstance(name)
     local id = opengothic.resolve(name)
     return id ~= nil and self:instanceId() == id
-end
-
--- Transfer all non-equipped items from source inventory to this NPC
-function opengothic.Npc:takeAllFrom(srcInv)
-    local items = srcInv:items()
-    local transferred = {}
-    local dstInv = self:inventory()
-    local world = self:world()
-    for _, item in ipairs(items) do
-        if not item:isEquipped() then
-            dstInv:transfer(srcInv, item:clsId(), item:count(), world)
-            table.insert(transferred, {name = item:displayName(), count = item:count()})
-        end
-    end
-    return transferred
-end
-
--- Check if current time is within a range (handles overnight ranges like 20:00 to 6:00)
-function opengothic.World:isTime(startHour, startMin, endHour, endMin)
-    local h, m = self:time()
-    local current = h * 60 + m
-    local startTime = startHour * 60 + startMin
-    local endTime = endHour * 60 + endMin
-
-    if startTime <= endTime then
-        -- Normal range (e.g., 8:00 to 18:00)
-        return current >= startTime and current < endTime
-    else
-        -- Overnight range (e.g., 20:00 to 6:00)
-        return current >= startTime or current < endTime
-    end
-end
-
--- Find NPCs near another NPC (convenience wrapper for findNpcsInRange)
-function opengothic.World:findNpcsNear(npc, range)
-    local x, y, z = npc:position()
-    return self:findNpcsInRange(x, y, z, range)
 end
 
 -- Check if NPC is sneaking
@@ -525,6 +556,11 @@ end
 opengothic.ai = {}
 
 local function _isNpc(value)
+    local core = opengothic.core
+    if core and type(core.isNpc) == "function" then
+        return core.isNpc(value)
+    end
+
     if value == nil then
         return false
     end
@@ -537,6 +573,11 @@ local function _isNpc(value)
 end
 
 local function _isInventory(value)
+    local core = opengothic.core
+    if core and type(core.isInventory) == "function" then
+        return core.isInventory(value)
+    end
+
     if value == nil then
         return false
     end
@@ -629,7 +670,11 @@ function opengothic.inventory.transferByPredicate(dstNpc, srcInv, predicate, opt
         return {}, "invalid_args"
     end
 
-    if predicate ~= nil and type(predicate) ~= "function" then
+    if predicate == nil then
+        return opengothic.inventory.transferAll(dstNpc, srcInv, opts)
+    end
+
+    if type(predicate) ~= "function" then
         return {}, "invalid_args"
     end
 
@@ -716,7 +761,38 @@ function opengothic.inventory.transferByPredicate(dstNpc, srcInv, predicate, opt
 end
 
 function opengothic.inventory.transferAll(dstNpc, srcInv, opts)
-    return opengothic.inventory.transferByPredicate(dstNpc, srcInv, nil, opts)
+    if not _isNpc(dstNpc) or not _isInventory(srcInv) then
+        return {}, "invalid_args"
+    end
+
+    if opts ~= nil and type(opts) ~= "table" then
+        return {}, "invalid_args"
+    end
+
+    local includeEquipped = opts and opts.includeEquipped == true or false
+    local includeMission = true
+    if opts and opts.includeMission ~= nil then
+        includeMission = opts.includeMission == true
+    end
+
+    local dstInvOk, dstInv = pcall(function()
+        return dstNpc:inventory()
+    end)
+    local worldOk, world = pcall(function()
+        return dstNpc:world()
+    end)
+    if not dstInvOk or not worldOk then
+        return {}, "transfer_context_failed"
+    end
+
+    local ok, result = pcall(function()
+        return dstInv:transferAll(srcInv, world, includeEquipped, includeMission)
+    end)
+    if not ok or type(result) ~= "table" then
+        return {}, "transfer_all_failed"
+    end
+
+    return result, nil
 end
 
 function opengothic.worldutil.findNearestNpc(origin, range, predicate)
@@ -733,6 +809,15 @@ function opengothic.worldutil.findNearestNpc(origin, range, predicate)
     end)
     if not worldOk then
         return nil
+    end
+
+    if predicate == nil then
+        local nearestOk, nearest = pcall(function()
+            return world:findNearestNpc(origin, range)
+        end)
+        if nearestOk then
+            return nearest
+        end
     end
 
     local listOk, npcs = pcall(function()
