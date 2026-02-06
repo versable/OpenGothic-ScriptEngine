@@ -87,6 +87,70 @@ function opengothic.printScreen(msg, x, y, time, font)
     opengothic._printScreen(msg, x, y, time or 5, font or "font_old_10_white.tga")
 end
 
+-- UI helper module (safe high-level wrappers around print primitives)
+opengothic.ui = {}
+
+function opengothic.ui.notify(text)
+    if type(text) ~= "string" then
+        return false, "invalid_text"
+    end
+
+    local ok = pcall(function()
+        opengothic.printMessage(text)
+    end)
+
+    if not ok then
+        return false, "notify_failed"
+    end
+
+    return true, nil
+end
+
+function opengothic.ui.toast(text, seconds, style)
+    if type(text) ~= "string" then
+        return false, "invalid_text"
+    end
+
+    local x = -1
+    local y = 85
+    local font = nil
+    local duration = seconds
+
+    if duration ~= nil and type(duration) ~= "number" then
+        return false, "invalid_duration"
+    end
+
+    if type(style) == "table" then
+        if style.x ~= nil and type(style.x) == "number" then
+            x = style.x
+        end
+        if style.y ~= nil and type(style.y) == "number" then
+            y = style.y
+        end
+        if style.font ~= nil and type(style.font) == "string" then
+            font = style.font
+        end
+    end
+
+    local ok = pcall(function()
+        opengothic.printScreen(text, x, y, duration, font)
+    end)
+
+    if not ok then
+        return false, "toast_failed"
+    end
+
+    return true, nil
+end
+
+function opengothic.ui.debug(text)
+    if text == nil then
+        return
+    end
+
+    print(tostring(text))
+end
+
 -- DamageCalculator convenience: combines primitives for common case
 function opengothic.DamageCalculator.calculate(attacker, victim, isSpell, spellId)
     local dmg = {}
