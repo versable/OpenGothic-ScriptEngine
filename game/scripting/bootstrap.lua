@@ -391,6 +391,18 @@ local function _isNpc(value)
     return ok and type(result) == "boolean"
 end
 
+local function _isInventory(value)
+    if value == nil then
+        return false
+    end
+
+    local ok, result = pcall(function()
+        return value:items()
+    end)
+
+    return ok and type(result) == "table"
+end
+
 function opengothic.ai.attackTarget(npc, target)
     if not _isNpc(npc) or not _isNpc(target) then
         return false, "invalid_npc_or_target"
@@ -461,6 +473,157 @@ function opengothic.ai.isCombatReady(npc)
     end
 
     return true
+end
+
+-- Inventory/world utility helper modules (safe wrappers around primitives)
+opengothic.inventory = {}
+opengothic.worldutil = {}
+
+function opengothic.inventory.transferByPredicate(dstNpc, srcInv, predicate, opts)
+    if not _isNpc(dstNpc) or not _isInventory(srcInv) then
+        return {}, "invalid_args"
+    end
+
+    if predicate ~= nil and type(predicate) ~= "function" then
+        return {}, "invalid_args"
+    end
+
+    if opts ~= nil and type(opts) ~= "table" then
+        return {}, "invalid_args"
+    end
+
+    local includeEquipped = opts and opts.includeEquipped == true or false
+    local includeMission = true
+    if opts and opts.includeMission ~= nil then
+        includeMission = opts.includeMission == true
+    end
+    local transferred = {}
+
+    local dstInvOk, dstInv = pcall(function()
+        return dstNpc:inventory()
+    end)
+    local worldOk, world = pcall(function()
+        return dstNpc:world()
+    end)
+    local itemsOk, items = pcall(function()
+        return srcInv:items()
+    end)
+
+    if not dstInvOk or not worldOk or not itemsOk then
+        return {}, "transfer_context_failed"
+    end
+
+    for _, item in ipairs(items) do
+        local shouldInclude = true
+
+        if not includeEquipped then
+            local equippedOk, isEquipped = pcall(function()
+                return item:isEquipped()
+            end)
+            if equippedOk and isEquipped then
+                shouldInclude = false
+            end
+        end
+
+        if shouldInclude and not includeMission then
+            local missionOk, isMission = pcall(function()
+                return item:isMission()
+            end)
+            if missionOk and isMission then
+                shouldInclude = false
+            end
+        end
+
+        if shouldInclude and predicate ~= nil then
+            local predOk, predResult = pcall(predicate, item)
+            if not predOk or predResult ~= true then
+                shouldInclude = false
+            end
+        end
+
+        if shouldInclude then
+            local idOk, itemId = pcall(function()
+                return item:clsId()
+            end)
+            local countOk, count = pcall(function()
+                return item:count()
+            end)
+
+            if idOk and countOk and count > 0 then
+                local transferOk, moved = pcall(function()
+                    return dstInv:transfer(srcInv, itemId, count, world)
+                end)
+                if transferOk and moved then
+                    local nameOk, name = pcall(function()
+                        return item:displayName()
+                    end)
+                    table.insert(transferred, {
+                        id = itemId,
+                        count = count,
+                        name = nameOk and name or ("item#" .. tostring(itemId))
+                    })
+                end
+            end
+        end
+    end
+
+    return transferred, nil
+end
+
+function opengothic.inventory.transferAll(dstNpc, srcInv, opts)
+    return opengothic.inventory.transferByPredicate(dstNpc, srcInv, nil, opts)
+end
+
+function opengothic.worldutil.findNearestNpc(origin, range, predicate)
+    if not _isNpc(origin) or type(range) ~= "number" or range <= 0 then
+        return nil
+    end
+
+    if predicate ~= nil and type(predicate) ~= "function" then
+        return nil
+    end
+
+    local worldOk, world = pcall(function()
+        return origin:world()
+    end)
+    if not worldOk then
+        return nil
+    end
+
+    local listOk, npcs = pcall(function()
+        return world:findNpcsNear(origin, range)
+    end)
+    if not listOk or type(npcs) ~= "table" then
+        return nil
+    end
+
+    local nearest = nil
+    local nearestDist = nil
+
+    for _, npc in ipairs(npcs) do
+        if _isNpc(npc) and npc ~= origin then
+            local pass = true
+
+            if predicate ~= nil then
+                local predOk, predVal = pcall(predicate, npc)
+                pass = predOk and predVal == true
+            end
+
+            if pass then
+                local distOk, dist = pcall(function()
+                    return origin:distanceTo(npc)
+                end)
+                if distOk and type(dist) == "number" and dist >= 0 then
+                    if nearestDist == nil or dist < nearestDist then
+                        nearest = npc
+                        nearestDist = dist
+                    end
+                end
+            end
+        end
+    end
+
+    return nearest
 end
 
 -- World convenience methods
