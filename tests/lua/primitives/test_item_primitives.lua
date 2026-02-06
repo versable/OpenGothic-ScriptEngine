@@ -22,6 +22,10 @@ opengothic.events.register("onWorldLoaded", function()
     -- String properties
     test.assert_type(item:displayName(), "string", "displayName returns string")
     test.assert_type(item:description(), "string", "description returns string")
+    local ix, iy, iz = item:position()
+    test.assert_type(ix, "number", "position x returns number")
+    test.assert_type(iy, "number", "position y returns number")
+    test.assert_type(iz, "number", "position z returns number")
 
     -- Numeric properties
     test.assert_type(item:count(), "number", "count returns number")

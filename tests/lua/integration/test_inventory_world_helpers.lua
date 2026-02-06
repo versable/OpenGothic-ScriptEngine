@@ -14,6 +14,7 @@ opengothic.events.register("onWorldLoaded", function()
     test.assert_type(opengothic.inventory.transferByPredicate, "function", "transferByPredicate exists")
     test.assert_type(opengothic.worldutil, "table", "opengothic.worldutil module exists")
     test.assert_type(opengothic.worldutil.findNearestNpc, "function", "findNearestNpc exists")
+    test.assert_type(opengothic.worldutil.findNearestItem, "function", "findNearestItem exists")
 
     -- Invalid argument handling
     local moved, err = opengothic.inventory.transferAll(nil, nil)
@@ -32,6 +33,12 @@ opengothic.events.register("onWorldLoaded", function()
     nearest = opengothic.worldutil.findNearestNpc(player, -1)
     test.assert_true(nearest == nil, "findNearestNpc rejects negative range")
 
+    local nearestItem = opengothic.worldutil.findNearestItem(nil, 100)
+    test.assert_true(nearestItem == nil, "findNearestItem rejects nil origin")
+
+    nearestItem = opengothic.worldutil.findNearestItem(player, -1)
+    test.assert_true(nearestItem == nil, "findNearestItem rejects negative range")
+
     -- Valid path: predicate always false -> deterministic no-transfer smoke test
     moved, err = opengothic.inventory.transferByPredicate(player, inv, function(_)
         return false
@@ -48,6 +55,14 @@ opengothic.events.register("onWorldLoaded", function()
         return false
     end)
     test.assert_true(noNearest == nil, "predicate can filter out all candidates")
+
+    nearestItem = opengothic.worldutil.findNearestItem(player, 5000)
+    test.assert_true(nearestItem == nil or type(nearestItem) == "userdata", "findNearestItem returns nil or Item userdata")
+
+    local noNearestItem = opengothic.worldutil.findNearestItem(player, 5000, function(_)
+        return false
+    end)
+    test.assert_true(noNearestItem == nil, "predicate can filter out all item candidates")
 
     test.summary()
 end)
