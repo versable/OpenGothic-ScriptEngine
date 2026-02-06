@@ -489,6 +489,23 @@ end
 -- Dialog/Info helpers
 opengothic.dialog = {}
 
+local function _dialogIsNpc(value)
+    local core = opengothic.core
+    if core and type(core.isNpc) == "function" then
+        return core.isNpc(value)
+    end
+
+    if value == nil then
+        return false
+    end
+
+    local ok, result = pcall(function()
+        return value:isPlayer()
+    end)
+
+    return ok and type(result) == "boolean"
+end
+
 -- Check if player knows a specific info
 function opengothic.dialog.playerKnows(infoName)
     local infoId = opengothic.resolve(infoName)
@@ -496,6 +513,58 @@ function opengothic.dialog.playerKnows(infoName)
     local player = opengothic.player()
     if not player then return false end
     return opengothic.daedalus.call("Npc_KnowsInfo", player, infoId) ~= 0
+end
+
+-- Check if a symbol name resolves to a dialog option symbol
+function opengothic.dialog.isOption(infoName)
+    if type(infoName) ~= "string" or infoName == "" then
+        return false
+    end
+
+    if string.sub(infoName, 1, 5) ~= "INFO_" then
+        return false
+    end
+
+    return opengothic.resolve(infoName) ~= nil
+end
+
+-- Check if NPC appears talkable for dialog flow guards
+function opengothic.dialog.canTalkTo(npc)
+    if not _dialogIsNpc(npc) then
+        return false
+    end
+
+    local player = opengothic.player()
+    if not _dialogIsNpc(player) then
+        return false
+    end
+
+    if npc == player then
+        return false
+    end
+
+    local deadOk, isDead = pcall(function()
+        return npc:isDead()
+    end)
+    if not deadOk or isDead then
+        return false
+    end
+
+    local downOk, isDown = pcall(function()
+        return npc:isDown()
+    end)
+    if not downOk or isDown then
+        return false
+    end
+
+    local talkingOk, isTalking = pcall(function()
+        return npc:isTalking()
+    end)
+    if talkingOk and isTalking then
+        return false
+    end
+
+    return true
 end
 
 -- NPC convenience methods (extend Npc metatable)
