@@ -578,7 +578,15 @@ opengothic.quest.SECTION = {
 -- Create a new quest topic
 function opengothic.quest.create(topicName, section)
     section = section or opengothic.quest.SECTION.MISSIONS
-    opengothic.daedalus.call("Log_CreateTopic", topicName, section)
+    if type(opengothic._questCreateTopic) == "function" then
+        opengothic._questCreateTopic(topicName, section)
+        return
+    end
+
+    local ok, _, err = opengothic.daedalus.tryCall("Log_CreateTopic", topicName, section)
+    if not ok then
+        print("[quest] create failed: " .. tostring(err))
+    end
 end
 
 -- Set quest status
@@ -586,12 +594,28 @@ function opengothic.quest.setState(topicName, status)
     if type(status) == "string" then
         status = opengothic.quest.STATUS[status:upper()] or 0
     end
-    opengothic.daedalus.call("Log_SetTopicStatus", topicName, status)
+    if type(opengothic._questSetTopicStatus) == "function" then
+        opengothic._questSetTopicStatus(topicName, status)
+        return
+    end
+
+    local ok, _, err = opengothic.daedalus.tryCall("Log_SetTopicStatus", topicName, status)
+    if not ok then
+        print("[quest] setState failed: " .. tostring(err))
+    end
 end
 
 -- Add a log entry to a quest
 function opengothic.quest.addEntry(topicName, entryText)
-    opengothic.daedalus.call("Log_AddEntry", topicName, entryText)
+    if type(opengothic._questAddEntry) == "function" then
+        opengothic._questAddEntry(topicName, entryText)
+        return
+    end
+
+    local ok, _, err = opengothic.daedalus.tryCall("Log_AddEntry", topicName, entryText)
+    if not ok then
+        print("[quest] addEntry failed: " .. tostring(err))
+    end
 end
 
 -- Dialog/Info helpers

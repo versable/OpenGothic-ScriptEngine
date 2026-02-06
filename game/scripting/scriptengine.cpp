@@ -217,6 +217,14 @@ void ScriptEngine::registerCoreFunctions() {
   lua_pushcfunction(L, luaGetPlayer, "opengothic.player");
   lua_setfield(L, -2, "player");
 
+  // Internal questlog bridge helpers used by bootstrap quest convenience methods
+  lua_pushcfunction(L, luaQuestCreateTopic, "opengothic._questCreateTopic");
+  lua_setfield(L, -2, "_questCreateTopic");
+  lua_pushcfunction(L, luaQuestSetTopicStatus, "opengothic._questSetTopicStatus");
+  lua_setfield(L, -2, "_questSetTopicStatus");
+  lua_pushcfunction(L, luaQuestAddEntry, "opengothic._questAddEntry");
+  lua_setfield(L, -2, "_questAddEntry");
+
   // opengothic.daedalus
   lua_newtable(L);
   lua_pushcfunction(L, luaDaedalusCall, "daedalus.call");
@@ -1888,6 +1896,48 @@ static const luaL_Reg inventory_meta[] = {
     Lua::push(L, player);
     Lua::setMetatable(L, "Npc");
     return 1;
+    }
+
+  int ScriptEngine::luaQuestCreateTopic(lua_State* L) {
+    const char* topicName = luaL_checkstring(L, 1);
+    int section = luaL_optinteger(L, 2, int(QuestLog::Section::Mission));
+
+    auto* questLog = const_cast<QuestLog*>(Gothic::inst().questLog());
+    if(!questLog)
+      return 0;
+
+    if(section == int(QuestLog::Section::Mission) || section == int(QuestLog::Section::Note))
+      questLog->add(topicName, QuestLog::Section(section));
+    return 0;
+    }
+
+  int ScriptEngine::luaQuestSetTopicStatus(lua_State* L) {
+    const char* topicName = luaL_checkstring(L, 1);
+    int status = luaL_checkinteger(L, 2);
+
+    auto* questLog = const_cast<QuestLog*>(Gothic::inst().questLog());
+    if(!questLog)
+      return 0;
+
+    if(status == int(QuestLog::Status::Running) ||
+       status == int(QuestLog::Status::Success) ||
+       status == int(QuestLog::Status::Failed)  ||
+       status == int(QuestLog::Status::Obsolete)) {
+      questLog->setStatus(topicName, QuestLog::Status(status));
+      }
+    return 0;
+    }
+
+  int ScriptEngine::luaQuestAddEntry(lua_State* L) {
+    const char* topicName = luaL_checkstring(L, 1);
+    const char* entryText = luaL_checkstring(L, 2);
+
+    auto* questLog = const_cast<QuestLog*>(Gothic::inst().questLog());
+    if(!questLog)
+      return 0;
+
+    questLog->addEntry(topicName, entryText);
+    return 0;
     }
 
   // --- Daedalus Bridge (opengothic.daedalus) ---

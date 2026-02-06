@@ -253,6 +253,9 @@ class ScriptEngine final {
     // Global Accessors
     static int luaGetWorld(lua_State* L);
     static int luaGetPlayer(lua_State* L);
+    static int luaQuestCreateTopic(lua_State* L);
+    static int luaQuestSetTopicStatus(lua_State* L);
+    static int luaQuestAddEntry(lua_State* L);
 
     // Daedalus Bridge (opengothic.daedalus)
     static int luaDaedalusCall(lua_State* L);
