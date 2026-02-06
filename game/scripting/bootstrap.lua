@@ -151,6 +151,151 @@ function opengothic.ui.debug(text)
     print(tostring(text))
 end
 
+-- Timer helper module (safe scheduler on top of onUpdate hook)
+opengothic.timer = {
+    _nextId = 1,
+    _tasks = {},
+    _order = {},
+    _hookRegistered = false,
+    _lastMinuteStamp = nil
+}
+
+local function _timerRunTask(taskId, task)
+    local ok, err = pcall(task.fn, taskId)
+    if not ok then
+        print("[Timer] callback error (" .. tostring(taskId) .. "): " .. tostring(err))
+    end
+end
+
+local function _timerOnUpdate(dt)
+    if type(dt) ~= "number" or dt < 0 then
+        dt = 0
+    end
+
+    -- Realtime timers
+    for _, taskId in ipairs(opengothic.timer._order) do
+        local task = opengothic.timer._tasks[taskId]
+        if task and task.kind == "realtime" then
+            task.remaining = task.remaining - dt
+
+            if task.repeatEvery ~= nil then
+                local guard = 0
+                while task.remaining <= 0 and opengothic.timer._tasks[taskId] ~= nil and guard < 8 do
+                    _timerRunTask(taskId, task)
+                    guard = guard + 1
+                    if opengothic.timer._tasks[taskId] ~= nil then
+                        task.remaining = task.remaining + task.repeatEvery
+                    end
+                end
+            elseif task.remaining <= 0 then
+                _timerRunTask(taskId, task)
+                opengothic.timer._tasks[taskId] = nil
+            end
+        end
+    end
+
+    -- Game-minute timers
+    local world = opengothic.world()
+    if not world then
+        opengothic.timer._lastMinuteStamp = nil
+        return false
+    end
+
+    local hour, minute = world:time()
+    if type(hour) ~= "number" or type(minute) ~= "number" then
+        return false
+    end
+
+    local stamp = hour * 60 + minute
+    if opengothic.timer._lastMinuteStamp == nil then
+        opengothic.timer._lastMinuteStamp = stamp
+        return false
+    end
+
+    if stamp ~= opengothic.timer._lastMinuteStamp then
+        opengothic.timer._lastMinuteStamp = stamp
+        for _, taskId in ipairs(opengothic.timer._order) do
+            local task = opengothic.timer._tasks[taskId]
+            if task and task.kind == "game_minute" then
+                _timerRunTask(taskId, task)
+            end
+        end
+    end
+
+    return false
+end
+
+local function _timerEnsureHook()
+    if opengothic.timer._hookRegistered then
+        return
+    end
+
+    opengothic.events.register("onUpdate", _timerOnUpdate)
+    opengothic.timer._hookRegistered = true
+end
+
+local function _timerCreateTask(task)
+    local taskId = opengothic.timer._nextId
+    opengothic.timer._nextId = taskId + 1
+    opengothic.timer._tasks[taskId] = task
+    table.insert(opengothic.timer._order, taskId)
+    _timerEnsureHook()
+    return taskId
+end
+
+function opengothic.timer.after(seconds, fn)
+    if type(seconds) ~= "number" or seconds < 0 or type(fn) ~= "function" then
+        return nil, "invalid_args"
+    end
+
+    local taskId = _timerCreateTask({
+        kind = "realtime",
+        fn = fn,
+        remaining = seconds,
+        repeatEvery = nil
+    })
+    return taskId, nil
+end
+
+function opengothic.timer.every(seconds, fn)
+    if type(seconds) ~= "number" or seconds <= 0 or type(fn) ~= "function" then
+        return nil, "invalid_args"
+    end
+
+    local taskId = _timerCreateTask({
+        kind = "realtime",
+        fn = fn,
+        remaining = seconds,
+        repeatEvery = seconds
+    })
+    return taskId, nil
+end
+
+function opengothic.timer.everyGameMinute(fn)
+    if type(fn) ~= "function" then
+        return nil, "invalid_args"
+    end
+
+    local taskId = _timerCreateTask({
+        kind = "game_minute",
+        fn = fn
+    })
+    return taskId, nil
+end
+
+function opengothic.timer.cancel(taskId)
+    if type(taskId) ~= "number" then
+        return false
+    end
+
+    if opengothic.timer._tasks[taskId] ~= nil then
+        opengothic.timer._tasks[taskId] = nil
+        return true
+    end
+
+    return false
+end
+
 -- DamageCalculator convenience: combines primitives for common case
 function opengothic.DamageCalculator.calculate(attacker, victim, isSpell, spellId)
     local dmg = {}
