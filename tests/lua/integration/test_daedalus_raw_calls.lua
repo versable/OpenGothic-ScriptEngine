@@ -8,9 +8,30 @@ local function hasSymbol(name)
     return opengothic.vm.getSymbol(name) ~= nil
 end
 
+local function printSymbolInfo(name)
+    local sym = opengothic.vm.getSymbol(name)
+    if sym == nil then
+        print("[daedalus_raw] symbol " .. name .. ": nil")
+        return
+    end
+    print("[daedalus_raw] symbol " .. name
+        .. " type=" .. tostring(sym.type)
+        .. " index=" .. tostring(sym.index)
+        .. " count=" .. tostring(sym.count)
+        .. " const=" .. tostring(sym.isConst))
+end
+
 local function skip(message)
     print("[SKIP] Daedalus Raw Calls: " .. message)
     test.assert_true(true, message)
+end
+
+local function assertExternalUnsupported(ok, err, message)
+    test.assert_eq(ok, false, message)
+    test.assert_type(err, "string", message .. " returns error string")
+    if type(err) == "string" then
+        test.assert_true(string.find(err, "external function", 1, true) ~= nil, message .. " reports unsupported external call")
+    end
 end
 
 opengothic.events.register("onWorldLoaded", function()
@@ -33,30 +54,34 @@ opengothic.events.register("onWorldLoaded", function()
     test.assert_eq(ok, false, "daedalus.call fails for missing function")
     test.assert_type(err, "string", "missing function returns error string")
 
+    printSymbolInfo("Npc_IsInState")
+    printSymbolInfo("Npc_GetStateTime")
+    printSymbolInfo("Hlp_StrCmp")
+    printSymbolInfo("Log_CreateTopic")
+    printSymbolInfo("Log_AddEntry")
+    printSymbolInfo("Log_SetTopicStatus")
+
     if hasSymbol("Npc_IsInState") and player ~= nil then
         ok, err = pcall(opengothic.daedalus.call, "Npc_IsInState", player, {})
         test.assert_eq(ok, false, "daedalus.call rejects unsupported argument types")
         test.assert_type(err, "string", "unsupported argument error is string")
 
-        local callOk, result = pcall(opengothic.daedalus.call, "Npc_IsInState", player, 0)
-        test.assert_eq(callOk, true, "daedalus.call supports userdata + int arguments")
-        test.assert_type(result, "number", "Npc_IsInState raw call returns number")
+        local callOk, callErr = pcall(opengothic.daedalus.call, "Npc_IsInState", player, 0)
+        assertExternalUnsupported(callOk, callErr, "daedalus.call blocks external userdata + int calls")
     else
         skip("Npc_IsInState probe skipped (symbol or player unavailable)")
     end
 
     if hasSymbol("Npc_GetStateTime") and player ~= nil then
-        local callOk, result = pcall(opengothic.daedalus.call, "Npc_GetStateTime", player)
-        test.assert_eq(callOk, true, "daedalus.call supports userdata-only argument call")
-        test.assert_type(result, "number", "Npc_GetStateTime raw call returns number")
+        local callOk, callErr = pcall(opengothic.daedalus.call, "Npc_GetStateTime", player)
+        assertExternalUnsupported(callOk, callErr, "daedalus.call blocks external userdata-only calls")
     else
         skip("Npc_GetStateTime probe skipped (symbol or player unavailable)")
     end
 
     if hasSymbol("Hlp_StrCmp") then
-        local callOk, result = pcall(opengothic.daedalus.call, "Hlp_StrCmp", "abc", "abc")
-        test.assert_eq(callOk, true, "daedalus.call supports string argument marshalling")
-        test.assert_type(result, "number", "Hlp_StrCmp raw call returns number")
+        local callOk, callErr = pcall(opengothic.daedalus.call, "Hlp_StrCmp", "abc", "abc")
+        assertExternalUnsupported(callOk, callErr, "daedalus.call blocks external string argument calls")
     else
         skip("Hlp_StrCmp probe skipped (symbol unavailable)")
     end
@@ -81,12 +106,11 @@ opengothic.events.register("onWorldLoaded", function()
 
     if hasSymbol("Npc_IsInState") and hasSymbol("SELF") and player ~= nil then
         local beforeSelf = opengothic.daedalus.get("SELF")
-        local ctxOk, ctxResult = pcall(opengothic.vm.callWithContext, "Npc_IsInState", { self = player }, player, 0)
-        test.assert_eq(ctxOk, true, "vm.callWithContext supports explicit self context")
-        test.assert_type(ctxResult, "number", "vm.callWithContext returns numeric result")
+        local ctxOk, ctxErr = pcall(opengothic.vm.callWithContext, "Npc_IsInState", { self = player }, player, 0)
+        assertExternalUnsupported(ctxOk, ctxErr, "vm.callWithContext blocks external calls")
 
         local afterSelf = opengothic.daedalus.get("SELF")
-        test.assert_eq(afterSelf, beforeSelf, "vm.callWithContext restores SELF after call")
+        test.assert_eq(afterSelf, beforeSelf, "vm.callWithContext restores SELF after external-call failure")
     else
         skip("vm.callWithContext probe skipped (symbols or player unavailable)")
     end
@@ -96,16 +120,13 @@ opengothic.events.register("onWorldLoaded", function()
         local topicName = "OG_LUA_RAW_CALLS_" .. tostring(topicSeq)
 
         local createOk, createErr = pcall(opengothic.daedalus.call, "Log_CreateTopic", topicName, 1)
-        test.assert_eq(createOk, true, "daedalus.call supports Log_CreateTopic(topic, section)")
-        test.assert_true(createErr == nil, "Log_CreateTopic does not return Lua error")
+        assertExternalUnsupported(createOk, createErr, "daedalus.call blocks external Log_CreateTopic(topic, section)")
 
         local addOk, addErr = pcall(opengothic.daedalus.call, "Log_AddEntry", topicName, "raw-call entry")
-        test.assert_eq(addOk, true, "daedalus.call supports Log_AddEntry(topic, text)")
-        test.assert_true(addErr == nil, "Log_AddEntry does not return Lua error")
+        assertExternalUnsupported(addOk, addErr, "daedalus.call blocks external Log_AddEntry(topic, text)")
 
         local statusOk, statusErr = pcall(opengothic.daedalus.call, "Log_SetTopicStatus", topicName, 1)
-        test.assert_eq(statusOk, true, "daedalus.call supports Log_SetTopicStatus(topic, status)")
-        test.assert_true(statusErr == nil, "Log_SetTopicStatus does not return Lua error")
+        assertExternalUnsupported(statusOk, statusErr, "daedalus.call blocks external Log_SetTopicStatus(topic, status)")
     else
         skip("Log_* probes skipped (symbols unavailable)")
     end

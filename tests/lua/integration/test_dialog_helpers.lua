@@ -10,7 +10,6 @@ opengothic.events.register("onWorldLoaded", function()
     local world = opengothic.world()
 
     test.assert_type(opengothic.dialog, "table", "opengothic.dialog module exists")
-    test.assert_type(opengothic.dialog.playerKnows, "function", "playerKnows exists")
     test.assert_type(opengothic.dialog.isOption, "function", "isOption exists")
     test.assert_type(opengothic.dialog.canTalkTo, "function", "canTalkTo exists")
 

@@ -705,15 +705,6 @@ local function _dialogMaybeReleaseOptionRulesHook()
     opengothic.dialog._optionRules.hookId = nil
 end
 
--- Check if player knows a specific info
-function opengothic.dialog.playerKnows(infoName)
-    local infoId = opengothic.resolve(infoName)
-    if not infoId then return false end
-    local player = opengothic.player()
-    if not player then return false end
-    return opengothic.daedalus.call("Npc_KnowsInfo", player, infoId) ~= 0
-end
-
 -- Check if a symbol name resolves to a dialog option symbol
 function opengothic.dialog.isOption(infoName)
     if not _dialogIsOptionName(infoName) then
@@ -874,51 +865,44 @@ function opengothic.Npc:callDaedalus(funcName, ...)
     return opengothic.vm.callWithContext(funcName, { self = self }, ...)
 end
 
--- Get NPC's current AI state name
-function opengothic.Npc:getStateName()
-    -- Returns the state function symbol index, not a string
-    return opengothic.daedalus.call("Npc_GetStateTime", self)
-end
-
--- Check if NPC is in a specific state
-function opengothic.Npc:isInState(stateName)
-    local stateId = opengothic.resolve(stateName)
-    if not stateId then return false end
-    return opengothic.daedalus.call("Npc_IsInState", self, stateId) ~= 0
-end
-
--- Give item to NPC
+-- Add item by symbol name to NPC inventory
 function opengothic.Npc:giveItem(itemName, count)
     count = count or 1
     local itemId = opengothic.resolve(itemName)
-    if not itemId then return false end
-    opengothic.daedalus.call("CreateInvItems", self, itemId, count)
-    return true
-end
+    if type(itemId) ~= "number" then
+        return false
+    end
 
--- Remove item from NPC
-function opengothic.Npc:removeItem(itemName, count)
-    count = count or 1
-    local itemId = opengothic.resolve(itemName)
-    if not itemId then return 0 end
-    return opengothic.daedalus.call("Npc_RemoveInvItems", self, itemId, count)
+    local inventory = self:inventory()
+    if inventory == nil then
+        return false
+    end
+
+    local ok, added = pcall(function()
+        return inventory:addItem(itemId, count)
+    end)
+
+    return ok and added ~= nil
 end
 
 -- Check if NPC has items
 function opengothic.Npc:hasItem(itemName, minCount)
     minCount = minCount or 1
     local itemId = opengothic.resolve(itemName)
-    if not itemId then return false end
-    local count = opengothic.daedalus.call("Npc_HasItems", self, itemId)
-    return count >= minCount
-end
+    if type(itemId) ~= "number" then
+        return false
+    end
 
--- Equip an item
-function opengothic.Npc:equipItem(itemName)
-    local itemId = opengothic.resolve(itemName)
-    if not itemId then return false end
-    opengothic.daedalus.call("EquipItem", self, itemId)
-    return true
+    local inventory = self:inventory()
+    if inventory == nil then
+        return false
+    end
+
+    local ok, count = pcall(function()
+        return inventory:itemCount(itemId)
+    end)
+
+    return ok and type(count) == "number" and count >= minCount
 end
 
 -- AI helper module (safe high-level wrappers around NPC primitives)
@@ -1317,16 +1301,18 @@ end
 -- World convenience methods
 function opengothic.World:insertNpc(npcName, waypoint)
     local npcId = opengothic.resolve(npcName)
-    if not npcId then return nil end
-    opengothic.daedalus.call("Wld_InsertNpc", npcId, waypoint)
-    return self:findNpc(npcId)
+    if not npcId then
+        return nil
+    end
+    return self:addNpc(npcId, waypoint)
 end
 
 function opengothic.World:insertItem(itemName, waypoint)
     local itemId = opengothic.resolve(itemName)
-    if not itemId then return nil end
-    opengothic.daedalus.call("Wld_InsertItem", itemId, waypoint)
-    return self:findItem(itemId)
+    if not itemId then
+        return nil
+    end
+    return self:addItem(itemId, waypoint)
 end
 
 
@@ -1334,21 +1320,30 @@ end
 opengothic.sound = {}
 
 function opengothic.sound.play(soundName)
-    opengothic.daedalus.call("Snd_Play", soundName)
-end
-
-function opengothic.sound.play3d(npc, soundName)
-    opengothic.daedalus.call("Snd_Play3D", npc, soundName)
+    local world = opengothic.world()
+    if world == nil then
+        return false
+    end
+    world:playSound(soundName)
+    return true
 end
 
 -- Effect helpers
 opengothic.effect = {}
 
 function opengothic.effect.play(effectName, source, target)
-    target = target or source
-    opengothic.daedalus.call("Wld_PlayEffect", effectName, source, target, 0, 0, 0, 0)
-end
+    local world = opengothic.world()
+    if world == nil or source == nil then
+        return false
+    end
 
-function opengothic.effect.stop(effectName)
-    opengothic.daedalus.call("Wld_StopEffect", effectName)
+    local ok, x, y, z = pcall(function()
+        return source:position()
+    end)
+    if not ok then
+        return false
+    end
+
+    world:playEffect(effectName, x, y, z)
+    return true
 end

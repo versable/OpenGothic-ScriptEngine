@@ -28,6 +28,8 @@
 #include <fstream>
 #include <limits>
 #include <sstream>
+#include <stdexcept>
+#include <vector>
 
 #include "scripting/bootstrap_lua.h"
 #include "scripting/constants_lua.h"
@@ -2026,6 +2028,143 @@ static const luaL_Reg inventory_meta[] = {
       }
     }
 
+  enum class BridgeArgType {
+    Int,
+    Float,
+    String,
+    Instance,
+    };
+
+  struct BridgeArg final {
+    BridgeArgType type = BridgeArgType::Int;
+    int32_t intValue = 0;
+    float floatValue = 0.f;
+    std::string stringValue;
+    std::shared_ptr<zenkit::DaedalusInstance> instanceValue;
+    };
+
+  static std::shared_ptr<zenkit::DaedalusInstance> toDaedalusInstance(lua_State* L, int idx) {
+    if(testUserdata(L, idx, "Npc")) {
+      auto* npc = Lua::to<Npc>(L, idx);
+      if(npc)
+        return npc->handlePtr();
+      return nullptr;
+      }
+    if(testUserdata(L, idx, "Item")) {
+      auto* item = Lua::to<Item>(L, idx);
+      if(item)
+        return item->handlePtr();
+      return nullptr;
+      }
+    return nullptr;
+    }
+
+  static bool parseBridgeArgs(lua_State* L, int firstArgIdx, int nargs, std::span<zenkit::DaedalusSymbol> params, bool permissive,
+                              std::vector<BridgeArg>& outArgs, std::string& err) {
+    if(params.size() < size_t(nargs)) {
+      std::ostringstream ss;
+      ss << "too many arguments provided: given " << nargs << " expected " << params.size();
+      err = ss.str();
+      return false;
+      }
+
+    if(params.size() > size_t(nargs)) {
+      std::ostringstream ss;
+      ss << "not enough arguments provided: given " << nargs << " expected " << params.size();
+      err = ss.str();
+      return false;
+      }
+
+    outArgs.clear();
+    outArgs.reserve(size_t(nargs));
+
+    for(int i = 0; i < nargs; ++i) {
+      const int luaIdx = firstArgIdx + i;
+      const auto expectedType = params[size_t(i)].type();
+      BridgeArg arg;
+
+      auto unsupportedArg = [&](const char* details) {
+        std::ostringstream ss;
+        ss << "unsupported argument at position " << (i + 1) << ": " << details;
+        err = ss.str();
+        };
+
+      switch(expectedType) {
+        case zenkit::DaedalusDataType::INT:
+        case zenkit::DaedalusDataType::FUNCTION:
+          arg.type = BridgeArgType::Int;
+          if(lua_isnumber(L, luaIdx)) {
+            arg.intValue = static_cast<int32_t>(lua_tointeger(L, luaIdx));
+            }
+          else if(lua_isnil(L, luaIdx) || permissive) {
+            arg.intValue = 0;
+            }
+          else {
+            unsupportedArg("expected int");
+            return false;
+            }
+          break;
+
+        case zenkit::DaedalusDataType::FLOAT:
+          arg.type = BridgeArgType::Float;
+          if(lua_isnumber(L, luaIdx)) {
+            arg.floatValue = static_cast<float>(lua_tonumber(L, luaIdx));
+            }
+          else if(lua_isnil(L, luaIdx) || permissive) {
+            arg.floatValue = 0.f;
+            }
+          else {
+            unsupportedArg("expected number");
+            return false;
+            }
+          break;
+
+        case zenkit::DaedalusDataType::STRING:
+          arg.type = BridgeArgType::String;
+          if(lua_isstring(L, luaIdx)) {
+            arg.stringValue = lua_tostring(L, luaIdx);
+            }
+          else if(lua_isnil(L, luaIdx) || permissive) {
+            arg.stringValue.clear();
+            }
+          else {
+            unsupportedArg("expected string");
+            return false;
+            }
+          break;
+
+        case zenkit::DaedalusDataType::INSTANCE:
+          arg.type = BridgeArgType::Instance;
+          if(lua_isnil(L, luaIdx)) {
+            arg.instanceValue = nullptr;
+            }
+          else if(lua_isuserdata(L, luaIdx)) {
+            arg.instanceValue = toDaedalusInstance(L, luaIdx);
+            if(arg.instanceValue == nullptr && !permissive) {
+              unsupportedArg("expected Npc or Item userdata");
+              return false;
+              }
+            }
+          else if(permissive) {
+            arg.instanceValue = nullptr;
+            }
+          else {
+            unsupportedArg("expected instance");
+            return false;
+            }
+          break;
+
+        default:
+          unsupportedArg("unsupported Daedalus parameter type");
+          return false;
+        }
+
+      outArgs.emplace_back(std::move(arg));
+      }
+
+    return true;
+    }
+
   // opengothic.daedalus.call(funcName, ...) - Call a Daedalus function
   int ScriptEngine::luaDaedalusCall(lua_State* L) {
     const char* funcName = luaL_checkstring(L, 1);
@@ -2048,78 +2187,54 @@ static const luaL_Reg inventory_meta[] = {
       return 0;
       }
 
-    // Gather arguments from Lua stack (start at index 2)
-    int nargs = lua_gettop(L) - 1;
-
-    // Push arguments onto Daedalus VM stack (in reverse order for Daedalus)
-    for(int i = nargs + 1; i >= 2; --i) {
-      if(lua_isnumber(L, i)) {
-        double num = lua_tonumber(L, i);
-        // Check if it's an integer (no fractional part)
-        if(num == static_cast<double>(static_cast<int32_t>(num))) {
-          vm.push_int(static_cast<int32_t>(lua_tointeger(L, i)));
-          }
-        else {
-          vm.push_float(static_cast<float>(num));
-          }
-        }
-      else if(lua_isstring(L, i)) {
-        vm.push_string(lua_tostring(L, i));
-        }
-      else if(lua_isuserdata(L, i)) {
-        // Check if it's an Npc or Item
-        if(testUserdata(L, i, "Npc")) {
-          auto* npc = Lua::check<Npc>(L, i, "Npc");
-          if(npc) {
-            vm.push_instance(npc->handlePtr());
-            }
-          else {
-            vm.push_int(0);
-            }
-          }
-        else if(testUserdata(L, i, "Item")) {
-          auto* item = Lua::check<Item>(L, i, "Item");
-          if(item) {
-            vm.push_instance(item->handlePtr());
-            }
-          else {
-            vm.push_int(0);
-            }
-          }
-        else {
-          vm.push_int(0);
-          }
-        }
-      else if(lua_isnil(L, i)) {
-        vm.push_int(0);
-        }
-      else {
-        luaL_error(L, "daedalus.call: unsupported argument type at position %d", i - 1);
-        return 0;
-        }
+    const int nargs = lua_gettop(L) - 1;
+    auto params = vm.find_parameters_for_function(sym);
+    std::vector<BridgeArg> args;
+    std::string parseErr;
+    if(!parseBridgeArgs(L, 2, nargs, params, false, args, parseErr)) {
+      luaL_error(L, "daedalus.call: error calling '%s': %s", funcName, parseErr.c_str());
+      return 0;
       }
 
     // Call the function
     try {
-      if(sym->rtype() == zenkit::DaedalusDataType::INT) {
-        int32_t result = vm.call_function<int32_t>(sym);
-        lua_pushinteger(L, result);
+      const bool useExternalCall = sym->is_external() || sym->address() >= vm.size();
+      if(useExternalCall) {
+        throw std::runtime_error("external function is not supported by the current bridge (requires external-call bridge extension)");
+        }
+
+      for(const auto& arg : args) {
+        switch(arg.type) {
+          case BridgeArgType::Int:
+            vm.push_int(arg.intValue);
+            break;
+          case BridgeArgType::Float:
+            vm.push_float(arg.floatValue);
+            break;
+          case BridgeArgType::String:
+            vm.push_string(arg.stringValue);
+            break;
+          case BridgeArgType::Instance:
+            vm.push_instance(arg.instanceValue);
+            break;
+          }
+        }
+
+      vm.unsafe_call(sym);
+      if(sym->rtype() == zenkit::DaedalusDataType::INT || sym->rtype() == zenkit::DaedalusDataType::FUNCTION) {
+        lua_pushinteger(L, static_cast<lua_Integer>(vm.pop_int()));
         return 1;
         }
-      else if(sym->rtype() == zenkit::DaedalusDataType::FLOAT) {
-        float result = vm.call_function<float>(sym);
-        lua_pushnumber(L, static_cast<double>(result));
+      if(sym->rtype() == zenkit::DaedalusDataType::FLOAT) {
+        lua_pushnumber(L, static_cast<double>(vm.pop_float()));
         return 1;
         }
-      else if(sym->rtype() == zenkit::DaedalusDataType::STRING) {
-        std::string result = vm.call_function<std::string>(sym);
+      if(sym->rtype() == zenkit::DaedalusDataType::STRING) {
+        auto& result = vm.pop_string();
         lua_pushstring(L, result.c_str());
         return 1;
         }
-      else {
-        vm.call_function<void>(sym);
-        return 0;
-        }
+      return 0;
       }
     catch(const std::exception& e) {
       luaL_error(L, "daedalus.call: error calling '%s': %s", funcName, e.what());
@@ -2288,6 +2403,15 @@ static const luaL_Reg inventory_meta[] = {
       return 0;
       }
 
+    const int nargs = lua_gettop(L) - 2;
+    auto params = vm.find_parameters_for_function(sym);
+    std::vector<BridgeArg> args;
+    std::string parseErr;
+    if(!parseBridgeArgs(L, 3, nargs, params, true, args, parseErr)) {
+      luaL_error(L, "vm.callWithContext: error calling '%s': %s", funcName, parseErr.c_str());
+      return 0;
+      }
+
     // Store previous context. We always restore these values after the call,
     // including explicit/null context values.
     std::shared_ptr<zenkit::DaedalusInstance> prevSelf   = vm.global_self()->get_instance();
@@ -2296,61 +2420,47 @@ static const luaL_Reg inventory_meta[] = {
     std::shared_ptr<zenkit::DaedalusInstance> prevItem   = vm.global_item()->get_instance();
     setContextFromTable(L, 2, vm, world, prevSelf, prevOther, prevVictim, prevItem);
 
-    // Gather arguments from Lua stack (start at index 3)
-    int nargs = lua_gettop(L) - 2;
-    for(int i = nargs + 2; i >= 3; --i) {
-      if(lua_isnumber(L, i)) {
-        double num = lua_tonumber(L, i);
-        if(num == static_cast<double>(static_cast<int32_t>(num))) {
-          vm.push_int(static_cast<int32_t>(lua_tointeger(L, i)));
-          }
-        else {
-          vm.push_float(static_cast<float>(num));
-          }
-        }
-      else if(lua_isstring(L, i)) {
-        vm.push_string(lua_tostring(L, i));
-        }
-      else if(lua_isuserdata(L, i)) {
-        if(testUserdata(L, i, "Npc")) {
-          auto* npc = Lua::check<Npc>(L, i, "Npc");
-          if(npc) vm.push_instance(npc->handlePtr());
-          else vm.push_int(0);
-          }
-        else if(testUserdata(L, i, "Item")) {
-          auto* item = Lua::check<Item>(L, i, "Item");
-          if(item) vm.push_instance(item->handlePtr());
-          else vm.push_int(0);
-          }
-        else {
-          vm.push_int(0);
-          }
-        }
-      else {
-        vm.push_int(0);
-        }
-      }
-
     int result = 0;
     try {
-      if(sym->rtype() == zenkit::DaedalusDataType::INT) {
-        int32_t ret = vm.call_function<int32_t>(sym);
-        lua_pushinteger(L, ret);
-        result = 1;
-        }
-      else if(sym->rtype() == zenkit::DaedalusDataType::FLOAT) {
-        float ret = vm.call_function<float>(sym);
-        lua_pushnumber(L, static_cast<double>(ret));
-        result = 1;
-        }
-      else if(sym->rtype() == zenkit::DaedalusDataType::STRING) {
-        std::string ret = vm.call_function<std::string>(sym);
-        lua_pushstring(L, ret.c_str());
-        result = 1;
+      const bool useExternalCall = sym->is_external() || sym->address() >= vm.size();
+      if(useExternalCall) {
+        throw std::runtime_error("external function is not supported by the current bridge (requires external-call bridge extension)");
         }
       else {
-        vm.call_function<void>(sym);
-        result = 0;
+        for(const auto& arg : args) {
+          switch(arg.type) {
+            case BridgeArgType::Int:
+              vm.push_int(arg.intValue);
+              break;
+            case BridgeArgType::Float:
+              vm.push_float(arg.floatValue);
+              break;
+            case BridgeArgType::String:
+              vm.push_string(arg.stringValue);
+              break;
+            case BridgeArgType::Instance:
+              vm.push_instance(arg.instanceValue);
+              break;
+            }
+          }
+
+        vm.unsafe_call(sym);
+        if(sym->rtype() == zenkit::DaedalusDataType::INT || sym->rtype() == zenkit::DaedalusDataType::FUNCTION) {
+          lua_pushinteger(L, static_cast<lua_Integer>(vm.pop_int()));
+          result = 1;
+          }
+        else if(sym->rtype() == zenkit::DaedalusDataType::FLOAT) {
+          lua_pushnumber(L, static_cast<double>(vm.pop_float()));
+          result = 1;
+          }
+        else if(sym->rtype() == zenkit::DaedalusDataType::STRING) {
+          auto& ret = vm.pop_string();
+          lua_pushstring(L, ret.c_str());
+          result = 1;
+          }
+        else {
+          result = 0;
+          }
         }
       }
     catch(const std::exception& e) {
