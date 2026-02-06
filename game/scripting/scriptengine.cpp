@@ -957,12 +957,39 @@ static const luaL_Reg inventory_meta[] = {
     return 0;
     }
 
+  int ScriptEngine::luaNpcGetTarget(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    if(npc == nullptr) {
+      lua_pushnil(L);
+      return 1;
+      }
+    Npc* target = npc->target();
+    if(target != nullptr) {
+      Lua::push(L, target);
+      Lua::setMetatable(L, "Npc");
+      } else {
+      lua_pushnil(L);
+      }
+    return 1;
+    }
+
   int ScriptEngine::luaNpcSetTarget(lua_State* L) {
     auto* npc = Lua::check<Npc>(L, 1, "Npc");
     auto* target = Lua::to<Npc>(L, 2);  // Can be nil
     if(npc == nullptr)
       return 0;
     npc->setTarget(target);
+    return 0;
+    }
+
+  int ScriptEngine::luaNpcSetPerceptionTime(lua_State* L) {
+    auto* npc = Lua::check<Npc>(L, 1, "Npc");
+    int32_t timeMs = luaL_checkinteger(L, 2);
+    if(npc == nullptr)
+      return 0;
+    if(timeMs < 0)
+      timeMs = 0;
+    npc->setPerceptionTime(uint64_t(timeMs));
     return 0;
     }
 
@@ -1083,7 +1110,9 @@ static const luaL_Reg inventory_meta[] = {
     {"setHealth",      &ScriptEngine::luaNpcSetHealth},
     {"distanceTo",     &ScriptEngine::luaNpcDistanceTo},
     {"flee",           &ScriptEngine::luaNpcFlee},
+    {"target",         &ScriptEngine::luaNpcGetTarget},
     {"setTarget",      &ScriptEngine::luaNpcSetTarget},
+    {"setPerceptionTime",&ScriptEngine::luaNpcSetPerceptionTime},
     {"attack",         &ScriptEngine::luaNpcAttack},
     {"clearAI",        &ScriptEngine::luaNpcClearAI},
     {"takeAllFrom",    &ScriptEngine::luaNpcTakeAllFrom},

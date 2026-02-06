@@ -88,6 +88,26 @@ opengothic.events.register("onWorldLoaded", function()
     test.assert_true(weapon == nil or type(weapon) == "userdata", "activeWeapon returns nil or Item")
     test.assert_type(player:activeSpell(), "number", "activeSpell returns number")
 
+    -- Target and perception primitives
+    test.assert_type(player.target, "function", "target primitive exists")
+    test.assert_type(player.setPerceptionTime, "function", "setPerceptionTime primitive exists")
+    local currentTarget = player:target()
+    test.assert_true(currentTarget == nil or type(currentTarget) == "userdata", "target returns nil or Npc")
+
+    player:setTarget(player)
+    local selfTarget = player:target()
+    test.assert_not_nil(selfTarget, "setTarget updates target")
+    if selfTarget ~= nil then
+        test.assert_eq(selfTarget:instanceId(), player:instanceId(), "target returns assigned npc")
+    end
+    player:setTarget(nil)
+    test.assert_eq(player:target(), nil, "setTarget(nil) clears target")
+
+    local okSetPerception = pcall(function()
+        player:setPerceptionTime(5000)
+    end)
+    test.assert_eq(okSetPerception, true, "setPerceptionTime accepts positive ms")
+
     test.summary()
 end)
 

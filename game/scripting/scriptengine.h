@@ -174,7 +174,9 @@ class ScriptEngine final {
     static int luaNpcSetHealth(lua_State* L);
     static int luaNpcDistanceTo(lua_State* L);
     static int luaNpcFlee(lua_State* L);
+    static int luaNpcGetTarget(lua_State* L);
     static int luaNpcSetTarget(lua_State* L);
+    static int luaNpcSetPerceptionTime(lua_State* L);
     static int luaNpcAttack(lua_State* L);
     static int luaNpcClearAI(lua_State* L);
     static int luaNpcTakeAllFrom(lua_State* L);

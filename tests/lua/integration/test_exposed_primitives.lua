@@ -64,8 +64,11 @@ opengothic.events.register("onWorldLoaded", function()
     test.assert_type(nearItems, "table", "world:detectItemsNear returns table")
 
     test.assert_type(player.takeAllFrom, "function", "npc:takeAllFrom primitive exists")
+    test.assert_type(player.target, "function", "npc:target primitive exists")
+    test.assert_type(player.setPerceptionTime, "function", "npc:setPerceptionTime primitive exists")
     local transferResult = player:takeAllFrom(inv)
     test.assert_type(transferResult, "table", "npc:takeAllFrom returns table")
+    test.assert_true(player:target() == nil or opengothic.core.isNpc(player:target()), "npc:target returns nil or Npc")
 
     -- onGameMinuteChanged hook is dispatchable in Lua layer
     local minuteHookFired = false
