@@ -26,6 +26,7 @@
 #include <Tempest/TextCodec>
 
 #include <fstream>
+#include <limits>
 #include <sstream>
 
 #include "scripting/bootstrap_lua.h"
@@ -106,6 +107,7 @@ void ScriptEngine::shutdown() {
     L = nullptr;
     }
   loadedScripts.clear();
+  lastGameMinuteStamp = -1;
   Log::i("[ScriptEngine] Shutdown");
   }
 
@@ -190,6 +192,14 @@ void ScriptEngine::registerCoreFunctions() {
   lua_newtable(L);
   lua_pushstring(L, "0.1.0");
   lua_setfield(L, -2, "VERSION");
+  lua_pushcfunction(L, luaCoreIsNpc, "core.isNpc");
+  lua_setfield(L, -2, "isNpc");
+  lua_pushcfunction(L, luaCoreIsInventory, "core.isInventory");
+  lua_setfield(L, -2, "isInventory");
+  lua_pushcfunction(L, luaCoreIsItem, "core.isItem");
+  lua_setfield(L, -2, "isItem");
+  lua_pushcfunction(L, luaCoreIsWorld, "core.isWorld");
+  lua_setfield(L, -2, "isWorld");
   lua_setfield(L, -2, "core");
 
   // opengothic.resolve
@@ -352,7 +362,26 @@ bool ScriptEngine::loadScriptsFromManifest(const std::string& manifestPath) {
 void ScriptEngine::update(float dt) {
   if(!L)
     return;
+
   (void)dispatchEvent("onUpdate", dt);
+
+  World* world = Gothic::inst().world();
+  if(world == nullptr) {
+    lastGameMinuteStamp = -1;
+    return;
+    }
+
+  gtime tm = world->time();
+  int stamp = int(tm.day()) * 24 * 60 + int(tm.hour()) * 60 + int(tm.minute());
+  if(lastGameMinuteStamp < 0) {
+    lastGameMinuteStamp = stamp;
+    return;
+    }
+
+  if(stamp != lastGameMinuteStamp) {
+    lastGameMinuteStamp = stamp;
+    (void)dispatchEvent("onGameMinuteChanged", int(tm.day()), int(tm.hour()), int(tm.minute()));
+    }
   }
 
 std::string ScriptEngine::executeString(const std::string& code) {
@@ -580,6 +609,35 @@ int ScriptEngine::luaPrintScreen(lua_State* L) {
   return 0;
   }
 
+static bool luaIsUserdataOfType(lua_State* L, int idx, const char* metatableName) {
+  if(!lua_getmetatable(L, idx))
+    return false;
+  luaL_getmetatable(L, metatableName);
+  bool sameType = lua_rawequal(L, -1, -2) != 0;
+  lua_pop(L, 2);
+  return sameType;
+  }
+
+int ScriptEngine::luaCoreIsNpc(lua_State* L) {
+  lua_pushboolean(L, luaIsUserdataOfType(L, 1, "Npc"));
+  return 1;
+  }
+
+int ScriptEngine::luaCoreIsInventory(lua_State* L) {
+  lua_pushboolean(L, luaIsUserdataOfType(L, 1, "Inventory"));
+  return 1;
+  }
+
+int ScriptEngine::luaCoreIsItem(lua_State* L) {
+  lua_pushboolean(L, luaIsUserdataOfType(L, 1, "Item"));
+  return 1;
+  }
+
+int ScriptEngine::luaCoreIsWorld(lua_State* L) {
+  lua_pushboolean(L, luaIsUserdataOfType(L, 1, "World"));
+  return 1;
+  }
+
 int ScriptEngine::luaInventoryGetItems(lua_State* L) {
   auto* inv = Lua::check<Inventory>(L, 1, "Inventory");
   if(!inv) {
@@ -612,6 +670,64 @@ int ScriptEngine::luaInventoryTransfer(lua_State* L) {
 
   Inventory::transfer(*dstInv, *srcInv, nullptr, size_t(itemId), size_t(count), *world);
   lua_pushboolean(L, true);
+  return 1;
+  }
+
+int ScriptEngine::luaInventoryTransferAll(lua_State* L) {
+  auto* dstInv = Lua::check<Inventory>(L, 1, "Inventory");
+  auto* srcInv = Lua::check<Inventory>(L, 2, "Inventory");
+  auto* world  = Lua::to<World>(L, 3); // optional
+  bool includeEquipped = lua_toboolean(L, 4);
+  bool includeMission  = lua_isnoneornil(L, 5) ? true : lua_toboolean(L, 5);
+
+  if(!dstInv || !srcInv) {
+    lua_newtable(L);
+    return 1;
+    }
+
+  if(world == nullptr)
+    world = Gothic::inst().world();
+
+  if(world == nullptr) {
+    lua_newtable(L);
+    return 1;
+    }
+
+  struct TransferRec {
+    size_t      id = 0;
+    size_t      count = 0;
+    std::string name;
+    };
+  std::vector<TransferRec> toTransfer;
+
+  for(auto it = srcInv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
+    const Item& item = *it;
+    if(!includeEquipped && item.isEquipped())
+      continue;
+    if(!includeMission && item.isMission())
+      continue;
+    const size_t count = item.count();
+    if(count == 0)
+      continue;
+
+    toTransfer.push_back(TransferRec{item.clsId(), count, std::string(item.displayName())});
+    }
+
+  lua_newtable(L);
+  int idx = 1;
+  for(const auto& rec : toTransfer) {
+    Inventory::transfer(*dstInv, *srcInv, nullptr, rec.id, rec.count, *world);
+
+    lua_newtable(L);
+    lua_pushinteger(L, int(rec.id));
+    lua_setfield(L, -2, "id");
+    lua_pushinteger(L, int(rec.count));
+    lua_setfield(L, -2, "count");
+    lua_pushstring(L, rec.name.c_str());
+    lua_setfield(L, -2, "name");
+    lua_rawseti(L, -2, idx++);
+    }
+
   return 1;
   }
 
@@ -658,6 +774,7 @@ int ScriptEngine::luaInventoryAddItem(lua_State* L) {
 static const luaL_Reg inventory_meta[] = {
   {"items",     &ScriptEngine::luaInventoryGetItems},
   {"transfer",  &ScriptEngine::luaInventoryTransfer},
+  {"transferAll",&ScriptEngine::luaInventoryTransferAll},
   {"itemCount", &ScriptEngine::luaInventoryItemCount},
   {"addItem",   &ScriptEngine::luaInventoryAddItem},
   {nullptr,     nullptr}
@@ -852,6 +969,69 @@ static const luaL_Reg inventory_meta[] = {
     return 0;
     }
 
+  int ScriptEngine::luaNpcTakeAllFrom(lua_State* L) {
+    auto* npc    = Lua::check<Npc>(L, 1, "Npc");
+    auto* srcInv = Lua::check<Inventory>(L, 2, "Inventory");
+    auto* world  = Lua::to<World>(L, 3); // optional
+    bool includeEquipped = lua_toboolean(L, 4);
+    bool includeMission  = lua_isnoneornil(L, 5) ? true : lua_toboolean(L, 5);
+
+    if(!npc || !srcInv) {
+      lua_newtable(L);
+      return 1;
+      }
+
+    auto* dstInv = &npc->inventory();
+    if(dstInv == srcInv) {
+      lua_newtable(L);
+      return 1;
+      }
+
+    if(world == nullptr)
+      world = &npc->world();
+    if(world == nullptr) {
+      lua_newtable(L);
+      return 1;
+      }
+
+    struct TransferRec {
+      size_t      id = 0;
+      size_t      count = 0;
+      std::string name;
+      };
+    std::vector<TransferRec> toTransfer;
+
+    for(auto it = srcInv->iterator(Inventory::T_Ransack); it.isValid(); ++it) {
+      const Item& item = *it;
+      if(!includeEquipped && item.isEquipped())
+        continue;
+      if(!includeMission && item.isMission())
+        continue;
+      const size_t count = item.count();
+      if(count == 0)
+        continue;
+
+      toTransfer.push_back(TransferRec{item.clsId(), count, std::string(item.displayName())});
+      }
+
+    lua_newtable(L);
+    int idx = 1;
+    for(const auto& rec : toTransfer) {
+      Inventory::transfer(*dstInv, *srcInv, nullptr, rec.id, rec.count, *world);
+
+      lua_newtable(L);
+      lua_pushinteger(L, int(rec.id));
+      lua_setfield(L, -2, "id");
+      lua_pushinteger(L, int(rec.count));
+      lua_setfield(L, -2, "count");
+      lua_pushstring(L, rec.name.c_str());
+      lua_setfield(L, -2, "name");
+      lua_rawseti(L, -2, idx++);
+      }
+
+    return 1;
+    }
+
   static const luaL_Reg npc_meta[] = {
     {"inventory",      &ScriptEngine::luaNpcInventory},
     {"world",          &ScriptEngine::luaNpcWorld},
@@ -893,6 +1073,7 @@ static const luaL_Reg inventory_meta[] = {
     {"setTarget",      &ScriptEngine::luaNpcSetTarget},
     {"attack",         &ScriptEngine::luaNpcAttack},
     {"clearAI",        &ScriptEngine::luaNpcClearAI},
+    {"takeAllFrom",    &ScriptEngine::luaNpcTakeAllFrom},
     {nullptr,          nullptr}
     };
 
@@ -1154,6 +1335,34 @@ static const luaL_Reg inventory_meta[] = {
     return 2;
     }
 
+  int ScriptEngine::luaWorldIsTime(lua_State* L) {
+    auto* world = Lua::check<World>(L, 1, "World");
+    int startHour = luaL_checkinteger(L, 2);
+    int startMin  = luaL_checkinteger(L, 3);
+    int endHour   = luaL_checkinteger(L, 4);
+    int endMin    = luaL_checkinteger(L, 5);
+
+    if(!world) {
+      lua_pushboolean(L, false);
+      return 1;
+      }
+
+    gtime tm = world->time();
+    int current = int(tm.hour()) * 60 + int(tm.minute());
+    int start   = startHour * 60 + startMin;
+    int end     = endHour * 60 + endMin;
+    bool inRange = false;
+
+    if(start <= end) {
+      inRange = current >= start && current < end;
+      } else {
+      inRange = current >= start || current < end;
+      }
+
+    lua_pushboolean(L, inRange);
+    return 1;
+    }
+
   int ScriptEngine::luaWorldRemoveItem(lua_State* L) {
     auto* world = Lua::check<World>(L, 1, "World");
     auto* item = Lua::check<Item>(L, 2, "Item");
@@ -1369,6 +1578,60 @@ static const luaL_Reg inventory_meta[] = {
       Lua::setMetatable(L, "Npc");
       lua_rawseti(L, -2, idx++);
       });
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldFindNpcsNear(lua_State* L) {
+    auto* world  = Lua::check<World>(L, 1, "World");
+    auto* origin = Lua::check<Npc>(L, 2, "Npc");
+    float range  = static_cast<float>(luaL_checknumber(L, 3));
+
+    if(!world || !origin || range <= 0.f) {
+      lua_newtable(L);
+      return 1;
+      }
+
+    const auto pos = origin->position();
+    lua_newtable(L);
+    int idx = 1;
+    world->detectNpc(pos, range, [L, &idx](Npc& npc) {
+      Lua::push(L, &npc);
+      Lua::setMetatable(L, "Npc");
+      lua_rawseti(L, -2, idx++);
+      });
+    return 1;
+    }
+
+  int ScriptEngine::luaWorldFindNearestNpc(lua_State* L) {
+    auto* world  = Lua::check<World>(L, 1, "World");
+    auto* origin = Lua::check<Npc>(L, 2, "Npc");
+    float range  = static_cast<float>(luaL_checknumber(L, 3));
+
+    if(!world || !origin || range <= 0.f) {
+      lua_pushnil(L);
+      return 1;
+      }
+
+    Npc* nearest = nullptr;
+    float nearestDist = std::numeric_limits<float>::max();
+    const auto pos = origin->position();
+
+    world->detectNpc(pos, range, [&](Npc& npc) {
+      if(&npc == origin)
+        return;
+      float dist = std::sqrt(origin->qDistTo(npc));
+      if(dist < nearestDist) {
+        nearestDist = dist;
+        nearest = &npc;
+        }
+      });
+
+    if(nearest) {
+      Lua::push(L, nearest);
+      Lua::setMetatable(L, "Npc");
+      } else {
+      lua_pushnil(L);
+      }
     return 1;
     }
 
@@ -2619,6 +2882,7 @@ void ScriptEngine::registerInternalAPI() {
   static const luaL_Reg world_meta[] = {
     {"spellDesc",       &ScriptEngine::luaGameScriptSpellDesc},
     {"time",            &ScriptEngine::luaWorldTime},
+    {"isTime",          &ScriptEngine::luaWorldIsTime},
     {"setDayTime",      &ScriptEngine::luaWorldSetDayTime},
     {"addNpc",          &ScriptEngine::luaWorldAddNpc},
     {"addNpcAt",        &ScriptEngine::luaWorldAddNpcAt},
@@ -2634,6 +2898,8 @@ void ScriptEngine::registerInternalAPI() {
     {"playEffect",       &ScriptEngine::luaWorldPlayEffect},
     {"day",              &ScriptEngine::luaWorldDay},
     {"findNpcsInRange",  &ScriptEngine::luaWorldFindNpcsInRange},
+    {"findNpcsNear",     &ScriptEngine::luaWorldFindNpcsNear},
+    {"findNearestNpc",   &ScriptEngine::luaWorldFindNearestNpc},
     {nullptr,            nullptr}
     };
   static const luaL_Reg empty[] = {{nullptr, nullptr}};

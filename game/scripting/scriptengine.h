@@ -95,6 +95,7 @@ class ScriptEngine final {
     std::vector<ScriptInfo> loadedScripts;
     bool                    jitEnabled = false;
     std::string*            consoleOutput = nullptr;
+    int                     lastGameMinuteStamp = -1;
 
     // Lua external functions registered from Lua (name -> Lua registry ref)
     std::unordered_map<std::string, int> luaExternals;
@@ -111,9 +112,14 @@ class ScriptEngine final {
     static int luaPrint(lua_State* L);
     static int luaPrintMessage(lua_State* L);
     static int luaPrintScreen(lua_State* L);
+    static int luaCoreIsNpc(lua_State* L);
+    static int luaCoreIsInventory(lua_State* L);
+    static int luaCoreIsItem(lua_State* L);
+    static int luaCoreIsWorld(lua_State* L);
 
     static int luaInventoryGetItems(lua_State* L);
     static int luaInventoryTransfer(lua_State* L);
+    static int luaInventoryTransferAll(lua_State* L);
     static int luaInventoryItemCount(lua_State* L);
     static int luaInventoryAddItem(lua_State* L);
 
@@ -171,6 +177,7 @@ class ScriptEngine final {
     static int luaNpcSetTarget(lua_State* L);
     static int luaNpcAttack(lua_State* L);
     static int luaNpcClearAI(lua_State* L);
+    static int luaNpcTakeAllFrom(lua_State* L);
 
     // Item Primitives
     static int luaItemGetDisplayName(lua_State* L);
@@ -218,7 +225,10 @@ class ScriptEngine final {
     static int luaWorldPlaySound(lua_State* L);
     static int luaWorldDay(lua_State* L);
     static int luaWorldPlayEffect(lua_State* L);
+    static int luaWorldIsTime(lua_State* L);
     static int luaWorldFindNpcsInRange(lua_State* L);
+    static int luaWorldFindNpcsNear(lua_State* L);
+    static int luaWorldFindNearestNpc(lua_State* L);
 
     // Interactive Primitives
     static int luaInteractiveIsContainer(lua_State* L);
