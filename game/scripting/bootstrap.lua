@@ -312,6 +312,93 @@ function opengothic.Npc:equipItem(itemName)
     return true
 end
 
+-- AI helper module (safe high-level wrappers around NPC primitives)
+opengothic.ai = {}
+
+local function _isNpc(value)
+    if value == nil then
+        return false
+    end
+
+    local ok, result = pcall(function()
+        return value:isPlayer()
+    end)
+
+    return ok and type(result) == "boolean"
+end
+
+function opengothic.ai.attackTarget(npc, target)
+    if not _isNpc(npc) or not _isNpc(target) then
+        return false, "invalid_npc_or_target"
+    end
+
+    local ok = pcall(function()
+        npc:setTarget(target)
+        npc:attack()
+    end)
+
+    if not ok then
+        return false, "attack_failed"
+    end
+
+    return true, nil
+end
+
+function opengothic.ai.flee(npc)
+    if not _isNpc(npc) then
+        return false, "invalid_npc"
+    end
+
+    local ok = pcall(function()
+        npc:flee()
+    end)
+
+    if not ok then
+        return false, "flee_failed"
+    end
+
+    return true, nil
+end
+
+function opengothic.ai.reset(npc)
+    if not _isNpc(npc) then
+        return false, "invalid_npc"
+    end
+
+    local ok = pcall(function()
+        npc:clearAI()
+        npc:setTarget(nil)
+    end)
+
+    if not ok then
+        return false, "reset_failed"
+    end
+
+    return true, nil
+end
+
+function opengothic.ai.isCombatReady(npc)
+    if not _isNpc(npc) then
+        return false
+    end
+
+    local okDead, dead = pcall(function()
+        return npc:isDead()
+    end)
+    if not okDead or dead then
+        return false
+    end
+
+    local okDown, down = pcall(function()
+        return npc:isDown()
+    end)
+    if not okDown or down then
+        return false
+    end
+
+    return true
+end
+
 -- World convenience methods
 function opengothic.World:insertNpc(npcName, waypoint)
     local npcId = opengothic.resolve(npcName)
