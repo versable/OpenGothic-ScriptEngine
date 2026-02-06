@@ -488,6 +488,11 @@ end
 
 -- Dialog/Info helpers
 opengothic.dialog = {}
+opengothic.dialog._optionRules = {
+    blocked = {},
+    timeWindows = {},
+    hookId = nil
+}
 
 local function _dialogIsNpc(value)
     local core = opengothic.core
@@ -506,6 +511,80 @@ local function _dialogIsNpc(value)
     return ok and type(result) == "boolean"
 end
 
+local function _dialogIsOptionName(infoName)
+    return type(infoName) == "string"
+        and infoName ~= ""
+        and string.sub(infoName, 1, 5) == "INFO_"
+end
+
+local function _dialogValidClock(hour, minute)
+    return type(hour) == "number"
+        and type(minute) == "number"
+        and hour >= 0 and hour < 24
+        and minute >= 0 and minute < 60
+end
+
+local function _dialogHasOptionRules()
+    return next(opengothic.dialog._optionRules.blocked) ~= nil
+        or next(opengothic.dialog._optionRules.timeWindows) ~= nil
+end
+
+local function _dialogOptionRulesHandler(_npc, _player, infoName)
+    if not _dialogIsOptionName(infoName) then
+        return false
+    end
+
+    if opengothic.dialog._optionRules.blocked[infoName] == true then
+        return true
+    end
+
+    local window = opengothic.dialog._optionRules.timeWindows[infoName]
+    if window == nil then
+        return false
+    end
+
+    local world = opengothic.world()
+    if world == nil then
+        return false
+    end
+
+    local ok, inWindow = pcall(function()
+        return world:isTime(window.startH, window.startM, window.endH, window.endM)
+    end)
+    if not ok then
+        return false
+    end
+
+    return inWindow ~= true
+end
+
+local function _dialogEnsureOptionRulesHook()
+    if opengothic.dialog._optionRules.hookId ~= nil then
+        return true
+    end
+
+    local hookId = opengothic.events.register("onDialogOption", _dialogOptionRulesHandler)
+    if type(hookId) ~= "number" then
+        return false
+    end
+
+    opengothic.dialog._optionRules.hookId = hookId
+    return true
+end
+
+local function _dialogMaybeReleaseOptionRulesHook()
+    if opengothic.dialog._optionRules.hookId == nil then
+        return
+    end
+
+    if _dialogHasOptionRules() then
+        return
+    end
+
+    opengothic.events.unregister("onDialogOption", opengothic.dialog._optionRules.hookId)
+    opengothic.dialog._optionRules.hookId = nil
+end
+
 -- Check if player knows a specific info
 function opengothic.dialog.playerKnows(infoName)
     local infoId = opengothic.resolve(infoName)
@@ -517,11 +596,7 @@ end
 
 -- Check if a symbol name resolves to a dialog option symbol
 function opengothic.dialog.isOption(infoName)
-    if type(infoName) ~= "string" or infoName == "" then
-        return false
-    end
-
-    if string.sub(infoName, 1, 5) ~= "INFO_" then
+    if not _dialogIsOptionName(infoName) then
         return false
     end
 
@@ -565,6 +640,104 @@ function opengothic.dialog.canTalkTo(npc)
     end
 
     return true
+end
+
+-- Register a safe onDialogOption callback wrapper
+function opengothic.dialog.onOption(callback)
+    if type(callback) ~= "function" then
+        return nil, "invalid_callback"
+    end
+
+    local hookId = opengothic.events.register("onDialogOption", function(npc, player, infoName)
+        if not _dialogIsOptionName(infoName) then
+            return false
+        end
+
+        local ok, blocked = pcall(callback, npc, player, infoName)
+        if not ok then
+            print("[Dialog] onOption callback error: " .. tostring(blocked))
+            return false
+        end
+
+        return blocked == true
+    end)
+
+    if type(hookId) ~= "number" then
+        return nil, "register_failed"
+    end
+
+    return hookId, nil
+end
+
+-- Unregister a callback previously returned by dialog.onOption
+function opengothic.dialog.offOption(handlerId)
+    if type(handlerId) ~= "number" then
+        return false
+    end
+
+    return opengothic.events.unregister("onDialogOption", handlerId)
+end
+
+-- Block or unblock a dialog option by name
+function opengothic.dialog.blockOption(infoName, blocked)
+    if not _dialogIsOptionName(infoName) then
+        return false, "invalid_info_name"
+    end
+
+    local shouldBlock = blocked
+    if shouldBlock == nil then
+        shouldBlock = true
+    end
+    if type(shouldBlock) ~= "boolean" then
+        return false, "invalid_blocked_flag"
+    end
+
+    if shouldBlock then
+        if not _dialogEnsureOptionRulesHook() then
+            return false, "register_failed"
+        end
+        opengothic.dialog._optionRules.blocked[infoName] = true
+    else
+        opengothic.dialog._optionRules.blocked[infoName] = nil
+        _dialogMaybeReleaseOptionRulesHook()
+    end
+
+    return true, nil
+end
+
+-- Add/update a time window for a dialog option
+function opengothic.dialog.setOptionTimeWindow(infoName, startH, startM, endH, endM)
+    if not _dialogIsOptionName(infoName) then
+        return false, "invalid_info_name"
+    end
+
+    if not _dialogValidClock(startH, startM) or not _dialogValidClock(endH, endM) then
+        return false, "invalid_time_window"
+    end
+
+    if not _dialogEnsureOptionRulesHook() then
+        return false, "register_failed"
+    end
+
+    opengothic.dialog._optionRules.timeWindows[infoName] = {
+        startH = startH,
+        startM = startM,
+        endH = endH,
+        endM = endM
+    }
+
+    return true, nil
+end
+
+-- Remove a previously registered time window for a dialog option
+function opengothic.dialog.clearOptionTimeWindow(infoName)
+    if not _dialogIsOptionName(infoName) then
+        return false, "invalid_info_name"
+    end
+
+    opengothic.dialog._optionRules.timeWindows[infoName] = nil
+    _dialogMaybeReleaseOptionRulesHook()
+    return true, nil
 end
 
 -- NPC convenience methods (extend Npc metatable)
