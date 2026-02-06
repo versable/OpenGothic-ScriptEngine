@@ -554,7 +554,7 @@ function opengothic.test.summary()
 end
 
 -- ============================================================
--- High-Level Conveniences (built on Daedalus bridge)
+-- High-Level Conveniences
 -- ============================================================
 
 -- Quest helpers
@@ -578,15 +578,11 @@ opengothic.quest.SECTION = {
 -- Create a new quest topic
 function opengothic.quest.create(topicName, section)
     section = section or opengothic.quest.SECTION.MISSIONS
-    if type(opengothic._questCreateTopic) == "function" then
-        opengothic._questCreateTopic(topicName, section)
+    if type(opengothic._questCreateTopic) ~= "function" then
+        print("[quest] create unavailable: missing _questCreateTopic hook")
         return
     end
-
-    local ok, _, err = opengothic.daedalus.tryCall("Log_CreateTopic", topicName, section)
-    if not ok then
-        print("[quest] create failed: " .. tostring(err))
-    end
+    opengothic._questCreateTopic(topicName, section)
 end
 
 -- Set quest status
@@ -594,28 +590,20 @@ function opengothic.quest.setState(topicName, status)
     if type(status) == "string" then
         status = opengothic.quest.STATUS[status:upper()] or 0
     end
-    if type(opengothic._questSetTopicStatus) == "function" then
-        opengothic._questSetTopicStatus(topicName, status)
+    if type(opengothic._questSetTopicStatus) ~= "function" then
+        print("[quest] setState unavailable: missing _questSetTopicStatus hook")
         return
     end
-
-    local ok, _, err = opengothic.daedalus.tryCall("Log_SetTopicStatus", topicName, status)
-    if not ok then
-        print("[quest] setState failed: " .. tostring(err))
-    end
+    opengothic._questSetTopicStatus(topicName, status)
 end
 
 -- Add a log entry to a quest
 function opengothic.quest.addEntry(topicName, entryText)
-    if type(opengothic._questAddEntry) == "function" then
-        opengothic._questAddEntry(topicName, entryText)
+    if type(opengothic._questAddEntry) ~= "function" then
+        print("[quest] addEntry unavailable: missing _questAddEntry hook")
         return
     end
-
-    local ok, _, err = opengothic.daedalus.tryCall("Log_AddEntry", topicName, entryText)
-    if not ok then
-        print("[quest] addEntry failed: " .. tostring(err))
-    end
+    opengothic._questAddEntry(topicName, entryText)
 end
 
 -- Dialog/Info helpers
