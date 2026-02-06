@@ -352,8 +352,7 @@ bool ScriptEngine::loadScriptsFromManifest(const std::string& manifestPath) {
 void ScriptEngine::update(float dt) {
   if(!L)
     return;
-  // TODO: call onUpdate handlers for loaded scripts
-  (void)dt;
+  (void)dispatchEvent("onUpdate", dt);
   }
 
 std::string ScriptEngine::executeString(const std::string& code) {
