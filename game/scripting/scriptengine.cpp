@@ -2855,11 +2855,6 @@ static const luaL_Reg inventory_meta[] = {
     {nullptr,          nullptr}
     };
 
-  static const luaL_Reg gamescript_funcs[] = {
-    {"spellDesc", &ScriptEngine::luaGameScriptSpellDesc},
-    {nullptr,     nullptr}
-    };
-
   int ScriptEngine::luaItemIsRune(lua_State* L) {
     auto* item = Lua::check<Item>(L, 1, "Item");
     if(!item) {
