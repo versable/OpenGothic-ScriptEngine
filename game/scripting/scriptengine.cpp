@@ -874,7 +874,7 @@ static const luaL_Reg inventory_meta[] = {
       lua_pushinteger(L, 0);
       return 1;
       }
-    lua_pushinteger(L, npc->guild());
+    lua_pushinteger(L, static_cast<lua_Integer>(npc->guild()));
     return 1;
     }
 
