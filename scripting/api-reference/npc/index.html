@@ -1,0 +1,3735 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Modding documentation for the OpenGothic Lua API.">
+      
+      
+      
+      
+        <link rel="prev" href="../world/">
+      
+      
+        <link rel="next" href="../item/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Npc - OpenGothic Scripting</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#npc-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OpenGothic Scripting" class="md-header__button md-logo" aria-label="OpenGothic Scripting" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OpenGothic Scripting
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Npc
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  Home
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../daedalus-bridge/" class="md-tabs__link">
+          
+  
+  
+  Daedalus Bridge
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OpenGothic Scripting" class="md-nav__button md-logo" aria-label="OpenGothic Scripting" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    OpenGothic Scripting
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Home
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/events-and-hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Events and Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/lifecycles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VM Lifecycles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/your-first-mod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your First Mod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/quickloot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickloot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/auto-pickup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto Pickup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/creating-a-quest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating a Quest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/custom-damage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Damage Logic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/dialog-time-windows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dialog Time Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/scavenger-flee/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cowardly Scavengers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../globals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Globals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Objects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Objects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../world/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    World
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Npc
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Npc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#npcdisplayname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:displayName()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#npcinstanceid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:instanceId()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#npcworld" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:world()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#npcinventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:inventory()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attributes-and-stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes and Stats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes and Stats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npcattributeattributeid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:attribute(attributeId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcchangeattributeattributeid-delta-allowunconscious" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:changeAttribute(attributeId, delta, allowUnconscious)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsethealthvalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setHealth(value)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npclevel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:level()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcexperience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:experience()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npclearningpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:learningPoints()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcguild" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:guild()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcprotectionprotectionid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:protection(protectionId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npctalentskilltalentid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:talentSkill(talentId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsettalentskilltalentid-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setTalentSkill(talentId, level)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npctalentvaluetalentid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:talentValue(talentId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npchitchancetalentid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:hitChance(talentId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#state-and-position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State and Position
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="State and Position">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npcisdead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isDead()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcisunconscious" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isUnconscious()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcisdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isDown()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcisplayer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isPlayer()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcistalking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isTalking()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcbodystate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:bodyState()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npchasstatestateid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:hasState(stateId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:position()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetpositionx-y-z" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setPosition(x, y, z)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcrotationy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:rotationY()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcrotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:rotation()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetdirectionyangle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setDirectionY(angle)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcwalkmode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:walkMode()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetwalkmodemode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setWalkMode(mode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#social-and-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Social and AI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Social and AI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npcattitude" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:attitude()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetattitudeattitude" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setAttitude(attitude)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#equipment-and-spells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equipment and Spells
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Equipment and Spells">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npciteminstanceid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:item(instanceId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcactiveweapon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:activeWeapon()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcactivespell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:activeSpell()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Control
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AI Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npcdistancetoother" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:distanceTo(other)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcflee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:flee()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsettargetother" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setTarget(other)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npctarget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:target()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetperceptiontimetimems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setPerceptionTime(timeMs)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcattack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:attack()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcclearai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:clearAI()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convenience-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenience Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convenience Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npccalldaedalusfuncname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:callDaedalus(funcName, ...)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcgiveitemitemname-count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:giveItem(itemName, count)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npchasitemitemname-mincount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:hasItem(itemName, minCount)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convenience-and-utility-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenience and Utility Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convenience and Utility Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npctakeallfromsrcinventory-world-includeequipped-includemission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:takeAllFrom(srcInventory, [world], [includeEquipped], [includeMission])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcisinstanceinstancename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isInstance(instanceName)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcissneaking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isSneaking()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../item/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Item
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interactive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Namespaces
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Namespaces
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/quest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.quest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/dialog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.dialog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.ai
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/timer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.timer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.ui
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/world/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.worldutil
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/damage-calculator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.DamageCalculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/sound/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.sound
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/effect/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.effect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daedalus Bridge
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Daedalus Bridge
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/migration-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#npcdisplayname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:displayName()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#npcinstanceid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:instanceId()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#npcworld" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:world()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#npcinventory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:inventory()
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#attributes-and-stats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes and Stats
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes and Stats">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npcattributeattributeid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:attribute(attributeId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcchangeattributeattributeid-delta-allowunconscious" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:changeAttribute(attributeId, delta, allowUnconscious)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsethealthvalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setHealth(value)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npclevel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:level()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcexperience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:experience()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npclearningpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:learningPoints()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcguild" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:guild()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcprotectionprotectionid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:protection(protectionId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npctalentskilltalentid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:talentSkill(talentId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsettalentskilltalentid-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setTalentSkill(talentId, level)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npctalentvaluetalentid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:talentValue(talentId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npchitchancetalentid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:hitChance(talentId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#state-and-position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State and Position
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="State and Position">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npcisdead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isDead()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcisunconscious" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isUnconscious()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcisdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isDown()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcisplayer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isPlayer()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcistalking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isTalking()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcbodystate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:bodyState()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npchasstatestateid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:hasState(stateId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:position()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetpositionx-y-z" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setPosition(x, y, z)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcrotationy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:rotationY()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcrotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:rotation()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetdirectionyangle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setDirectionY(angle)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcwalkmode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:walkMode()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetwalkmodemode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setWalkMode(mode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#social-and-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Social and AI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Social and AI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npcattitude" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:attitude()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetattitudeattitude" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setAttitude(attitude)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#equipment-and-spells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Equipment and Spells
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Equipment and Spells">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npciteminstanceid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:item(instanceId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcactiveweapon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:activeWeapon()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcactivespell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:activeSpell()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Control
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AI Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npcdistancetoother" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:distanceTo(other)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcflee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:flee()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsettargetother" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setTarget(other)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npctarget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:target()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcsetperceptiontimetimems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:setPerceptionTime(timeMs)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcattack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:attack()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcclearai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:clearAI()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convenience-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenience Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convenience Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npccalldaedalusfuncname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:callDaedalus(funcName, ...)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcgiveitemitemname-count" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:giveItem(itemName, count)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npchasitemitemname-mincount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:hasItem(itemName, minCount)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convenience-and-utility-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenience and Utility Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convenience and Utility Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#npctakeallfromsrcinventory-world-includeequipped-includemission" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:takeAllFrom(srcInventory, [world], [includeEquipped], [includeMission])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcisinstanceinstancename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isInstance(instanceName)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npcissneaking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npc:isSneaking()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="npc-api">Npc API</h1>
+<p>The <code>Npc</code> object represents a character in the world, including the player, allies, and enemies. It is one of the most important objects in the API.</p>
+<hr />
+<h3 id="npcdisplayname"><code>npc:displayName()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>name</code> (string) - The NPC's display name.</li>
+</ul>
+<h3 id="npcinstanceid"><code>npc:instanceId()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>id</code> (number) - The NPC's Daedalus instance symbol ID. Note: This is the <strong>type</strong> identifier, not a unique ID. All NPCs spawned from the same Daedalus instance (e.g., all "SCAVENGER" NPCs) share the same <code>instanceId()</code>.</li>
+</ul>
+<h3 id="npcworld"><code>npc:world()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>World</code> - The <code>World</code> object this NPC belongs to.</li>
+</ul>
+<h3 id="npcinventory"><code>npc:inventory()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>Inventory</code> - The NPC's <code>Inventory</code> object.</li>
+</ul>
+<hr />
+<h2 id="attributes-and-stats">Attributes and Stats</h2>
+<h3 id="npcattributeattributeid"><code>npc:attribute(attributeId)</code></h3>
+<p>Gets the value of a primary attribute. Use <code>opengothic.CONSTANTS.Attribute</code>.</p>
+<ul>
+<li><code>attributeId</code> (number): The ID of the attribute.</li>
+<li><strong>Returns</strong>: <code>value</code> (number).</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">player</span><span class="p">:</span><span class="nf">attribute</span><span class="p">(</span><span class="nv">opengothic</span><span class="p">.</span><span class="py">CONSTANTS</span><span class="p">.</span><span class="py">Attribute</span><span class="p">.</span><span class="py">ATR_STRENGTH</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Player strength: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">str</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="npcchangeattributeattributeid-delta-allowunconscious"><code>npc:changeAttribute(attributeId, delta, allowUnconscious)</code></h3>
+<p>Changes an attribute by a relative amount.</p>
+<ul>
+<li><code>attributeId</code> (number): The ID of the attribute.</li>
+<li><code>delta</code> (number): The amount to add or subtract.</li>
+<li><code>allowUnconscious</code> (boolean): If <code>true</code>, a negative change to health can cause unconsciousness but not death.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">-- Give the player 10 mana</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nv">player</span><span class="p">:</span><span class="nf">changeAttribute</span><span class="p">(</span><span class="nv">opengothic</span><span class="p">.</span><span class="py">CONSTANTS</span><span class="p">.</span><span class="py">Attribute</span><span class="p">.</span><span class="py">ATR_MANA</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="npcsethealthvalue"><code>npc:setHealth(value)</code></h3>
+<p>Sets the NPC's health to an absolute value.</p>
+<ul>
+<li><code>value</code> (number): The new health value.</li>
+</ul>
+<h3 id="npclevel"><code>npc:level()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>level</code> (number)</li>
+</ul>
+<h3 id="npcexperience"><code>npc:experience()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>experience</code> (number)</li>
+</ul>
+<h3 id="npclearningpoints"><code>npc:learningPoints()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>lp</code> (number)</li>
+</ul>
+<h3 id="npcguild"><code>npc:guild()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>guildId</code> (number) - The NPC's guild ID.</li>
+</ul>
+<h3 id="npcprotectionprotectionid"><code>npc:protection(protectionId)</code></h3>
+<p>Gets the NPC's protection value against a specific damage type. Use <code>opengothic.CONSTANTS.Protection</code>.</p>
+<ul>
+<li><code>protectionId</code> (number): The ID of the protection type.</li>
+<li><strong>Returns</strong>: <code>value</code> (number).</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">fireProtection</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">():</span><span class="nf">protection</span><span class="p">(</span><span class="nv">opengothic</span><span class="p">.</span><span class="py">CONSTANTS</span><span class="p">.</span><span class="py">Protection</span><span class="p">.</span><span class="py">PROT_FIRE</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Player fire protection: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">fireProtection</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="npctalentskilltalentid"><code>npc:talentSkill(talentId)</code></h3>
+<p>Gets the NPC's skill level in a talent (e.g., One-Handed). Use <code>opengothic.CONSTANTS.Talent</code>.</p>
+<ul>
+<li><code>talentId</code> (number): The ID of the talent.</li>
+<li><strong>Returns</strong>: <code>level</code> (number).</li>
+</ul>
+<h3 id="npcsettalentskilltalentid-level"><code>npc:setTalentSkill(talentId, level)</code></h3>
+<p>Sets the NPC's talent skill level.</p>
+<ul>
+<li><code>talentId</code> (number): The ID of the talent.</li>
+<li><code>level</code> (number): The new skill level.</li>
+</ul>
+<h3 id="npctalentvaluetalentid"><code>npc:talentValue(talentId)</code></h3>
+<p>Gets the NPC's raw value in a talent (e.g., Lockpicking value).</p>
+<ul>
+<li><code>talentId</code> (number): The ID of the talent.</li>
+<li><strong>Returns</strong>: <code>value</code> (number).</li>
+</ul>
+<h3 id="npchitchancetalentid"><code>npc:hitChance(talentId)</code></h3>
+<p>Gets the NPC's hit chance for a given weapon talent.</p>
+<ul>
+<li><code>talentId</code> (number): The ID of the talent (<code>TALENT_1H</code>, <code>TALENT_2H</code>, etc.).</li>
+<li><strong>Returns</strong>: <code>chance</code> (number) - The hit chance from 0 to 100.</li>
+</ul>
+<hr />
+<h2 id="state-and-position">State and Position</h2>
+<h3 id="npcisdead"><code>npc:isDead()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if the NPC is dead.</li>
+</ul>
+<h3 id="npcisunconscious"><code>npc:isUnconscious()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if the NPC is unconscious.</li>
+</ul>
+<h3 id="npcisdown"><code>npc:isDown()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if the NPC is dead OR unconscious.</li>
+</ul>
+<h3 id="npcisplayer"><code>npc:isPlayer()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if this NPC is the player.</li>
+</ul>
+<h3 id="npcistalking"><code>npc:isTalking()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if the NPC is currently in talking state.</li>
+</ul>
+<h3 id="npcbodystate"><code>npc:bodyState()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>state</code> (number) - The raw body state bitmask. Use <code>hasState</code> for easier checks.</li>
+</ul>
+<h3 id="npchasstatestateid"><code>npc:hasState(stateId)</code></h3>
+<ul>
+<li><code>stateId</code> (number): The body state to check. Use <code>opengothic.CONSTANTS.BodyState</code>.</li>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if the NPC has the specified state.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kr">if</span><span class="w"> </span><span class="nv">someNpc</span><span class="p">:</span><span class="nf">hasState</span><span class="p">(</span><span class="nv">opengothic</span><span class="p">.</span><span class="py">CONSTANTS</span><span class="p">.</span><span class="py">BodyState</span><span class="p">.</span><span class="py">BS_SNEAK</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="nv">someNpc</span><span class="p">:</span><span class="nf">displayName</span><span class="p">()</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s2">&quot; is sneaking!&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kr">end</span>
+</code></pre></div>
+<h3 id="npcposition"><code>npc:position()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>x</code> (number), <code>y</code> (number), <code>z</code> (number) - The NPC's world coordinates.</li>
+</ul>
+<h3 id="npcsetpositionx-y-z"><code>npc:setPosition(x, y, z)</code></h3>
+<p>Teleports the NPC to the specified world coordinates.</p>
+<ul>
+<li><code>x</code>, <code>y</code>, <code>z</code> (numbers): The destination coordinates.</li>
+</ul>
+<h3 id="npcrotationy"><code>npc:rotationY()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>angle</code> (number) - The NPC's rotation on the Y-axis (facing direction).</li>
+</ul>
+<h3 id="npcrotation"><code>npc:rotation()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>angle</code> (number) - The NPC's full rotation value.</li>
+</ul>
+<h3 id="npcsetdirectionyangle"><code>npc:setDirectionY(angle)</code></h3>
+<ul>
+<li><code>angle</code> (number): The new Y-axis rotation.</li>
+</ul>
+<h3 id="npcwalkmode"><code>npc:walkMode()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>mode</code> (number) - The raw walk mode bitmask.</li>
+</ul>
+<h3 id="npcsetwalkmodemode"><code>npc:setWalkMode(mode)</code></h3>
+<ul>
+<li><code>mode</code> (number): The new walk mode. Use <code>opengothic.CONSTANTS.WalkBit</code>.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">-- Force an NPC to run</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">local</span><span class="w"> </span><span class="nv">npcId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">resolve</span><span class="p">(</span><span class="s2">&quot;VLK_400_BUDDLER&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kd">local</span><span class="w"> </span><span class="nv">someNpc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">npcId</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">findNpc</span><span class="p">(</span><span class="nv">npcId</span><span class="p">)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="kr">if</span><span class="w"> </span><span class="nv">someNpc</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nv">someNpc</span><span class="p">:</span><span class="nf">setWalkMode</span><span class="p">(</span><span class="nv">opengothic</span><span class="p">.</span><span class="py">CONSTANTS</span><span class="p">.</span><span class="py">WalkBit</span><span class="p">.</span><span class="py">WM_Run</span><span class="p">)</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h2 id="social-and-ai">Social and AI</h2>
+<h3 id="npcattitude"><code>npc:attitude()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>attitude</code> (number) - The NPC's attitude towards the player. See <code>opengothic.CONSTANTS.Attitude</code>.</li>
+</ul>
+<h3 id="npcsetattitudeattitude"><code>npc:setAttitude(attitude)</code></h3>
+<ul>
+<li><code>attitude</code> (number): The new attitude.</li>
+</ul>
+<hr />
+<h2 id="equipment-and-spells">Equipment and Spells</h2>
+<h3 id="npciteminstanceid"><code>npc:item(instanceId)</code></h3>
+<p>Gets a specific item from the NPC's inventory.</p>
+<ul>
+<li><code>instanceId</code> (number): The instance ID of the item.</li>
+<li><strong>Returns</strong>: <code>Item</code> object, or <code>nil</code> if not found.</li>
+</ul>
+<h3 id="npcactiveweapon"><code>npc:activeWeapon()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>Item</code> object representing the currently equipped weapon, or <code>nil</code>.</li>
+</ul>
+<h3 id="npcactivespell"><code>npc:activeSpell()</code></h3>
+<ul>
+<li><strong>Returns</strong>: <code>spellId</code> (number) - The class ID of the active spell, or -1 if none.</li>
+</ul>
+<hr />
+<h2 id="ai-control">AI Control</h2>
+<h3 id="npcdistancetoother"><code>npc:distanceTo(other)</code></h3>
+<p>Calculates the distance to another NPC.</p>
+<ul>
+<li><code>other</code> (Npc): The other NPC.</li>
+<li><strong>Returns</strong>: <code>distance</code> (number) - Distance in world units, or -1 if either NPC is invalid.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">dist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">npc</span><span class="p">:</span><span class="nf">distanceTo</span><span class="p">(</span><span class="nv">player</span><span class="p">)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kr">if</span><span class="w"> </span><span class="nv">dist</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1000</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NPC is close to player&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="npcflee"><code>npc:flee()</code></h3>
+<p>Makes the NPC flee from their current threat. Pushes a flee action to the AI queue.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">-- Make NPC run away</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nv">npc</span><span class="p">:</span><span class="nf">flee</span><span class="p">()</span>
+</code></pre></div>
+<hr />
+<h3 id="npcsettargetother"><code>npc:setTarget(other)</code></h3>
+<p>Sets the NPC's combat target.</p>
+<ul>
+<li><code>other</code> (Npc or nil): The target NPC, or <code>nil</code> to clear the target.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nv">npc</span><span class="p">:</span><span class="nf">setTarget</span><span class="p">(</span><span class="nv">player</span><span class="p">)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nv">npc</span><span class="p">:</span><span class="nf">attack</span><span class="p">()</span>
+</code></pre></div>
+<hr />
+<h3 id="npctarget"><code>npc:target()</code></h3>
+<p>Gets the NPC's current combat target.</p>
+<ul>
+<li><strong>Returns</strong>: <code>Npc</code> or <code>nil</code>.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">npc</span><span class="p">:</span><span class="nf">target</span><span class="p">()</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kr">if</span><span class="w"> </span><span class="nv">target</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="nv">npc</span><span class="p">:</span><span class="nf">displayName</span><span class="p">()</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s2">&quot; targets &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">target</span><span class="p">:</span><span class="nf">displayName</span><span class="p">())</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="npcsetperceptiontimetimems"><code>npc:setPerceptionTime(timeMs)</code></h3>
+<p>Sets the NPC perception polling interval in milliseconds.</p>
+<ul>
+<li><code>timeMs</code> (number): Interval in milliseconds. Values below 0 are clamped to 0.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">-- Poll perceptions more frequently while debugging</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nv">npc</span><span class="p">:</span><span class="nf">setPerceptionTime</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="npcattack"><code>npc:attack()</code></h3>
+<p>Makes the NPC attack their current target. Pushes an attack action to the AI queue.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nv">npc</span><span class="p">:</span><span class="nf">setTarget</span><span class="p">(</span><span class="nv">enemy</span><span class="p">)</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nv">npc</span><span class="p">:</span><span class="nf">attack</span><span class="p">()</span>
+</code></pre></div>
+<hr />
+<h3 id="npcclearai"><code>npc:clearAI()</code></h3>
+<p>Clears all pending AI actions from the NPC's action queue.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1">-- Stop current behavior and start fresh</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nv">npc</span><span class="p">:</span><span class="nf">clearAI</span><span class="p">()</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="nv">npc</span><span class="p">:</span><span class="nf">flee</span><span class="p">()</span>
+</code></pre></div>
+<hr />
+<h2 id="convenience-methods">Convenience Methods</h2>
+<p>These methods are defined in <code>bootstrap.lua</code> and compose available scripting primitives.</p>
+<h3 id="npccalldaedalusfuncname"><code>npc:callDaedalus(funcName, ...)</code></h3>
+<p>Calls a Daedalus function with this NPC set as the <code>self</code> context.</p>
+<ul>
+<li><code>funcName</code> (string): The name of the Daedalus function to call.</li>
+<li><code>...</code>: Additional arguments to pass to the function.</li>
+<li><strong>Returns</strong>: The return value from the Daedalus function.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nv">player</span><span class="p">:</span><span class="nf">callDaedalus</span><span class="p">(</span><span class="s2">&quot;B_GivePlayerXP&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="npcgiveitemitemname-count"><code>npc:giveItem(itemName, count)</code></h3>
+<p>Adds items to the NPC inventory.</p>
+<ul>
+<li><code>itemName</code> (string): The name of the item instance (e.g., <code>"ITMI_GOLD"</code>).</li>
+<li><code>count</code> (number, optional): The number of items to give. Defaults to 1.</li>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if successful.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nv">player</span><span class="p">:</span><span class="nf">giveItem</span><span class="p">(</span><span class="s2">&quot;ITMI_GOLD&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="nv">player</span><span class="p">:</span><span class="nf">giveItem</span><span class="p">(</span><span class="s2">&quot;ITAR_MIL_L&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="npchasitemitemname-mincount"><code>npc:hasItem(itemName, minCount)</code></h3>
+<p>Checks if the NPC has at least a specified number of an item.</p>
+<ul>
+<li><code>itemName</code> (string): The name of the item instance.</li>
+<li><code>minCount</code> (number, optional): The minimum count required. Defaults to 1.</li>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if the NPC has at least <code>minCount</code> of the item.</li>
+</ul>
+<p>Notes:
+- Delegates to <code>opengothic.inventory.hasItem(...)</code> convenience helper.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kr">if</span><span class="w"> </span><span class="nv">player</span><span class="p">:</span><span class="nf">hasItem</span><span class="p">(</span><span class="s2">&quot;ITKE_KEY_01&quot;</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Player has the key!&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="kr">end</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="kr">if</span><span class="w"> </span><span class="nv">player</span><span class="p">:</span><span class="nf">hasItem</span><span class="p">(</span><span class="s2">&quot;ITMI_GOLD&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Player has enough gold&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h2 id="convenience-and-utility-methods">Convenience and Utility Methods</h2>
+<p>These methods are available on <code>Npc</code> for common scripting tasks.</p>
+<h3 id="npctakeallfromsrcinventory-world-includeequipped-includemission"><code>npc:takeAllFrom(srcInventory, [world], [includeEquipped], [includeMission])</code></h3>
+<p>Transfers item stacks from <code>srcInventory</code> to this NPC's inventory.</p>
+<ul>
+<li><code>srcInventory</code> (Inventory): Source inventory.</li>
+<li><code>world</code> (World, optional): World context for transfer. Defaults to the NPC's world.</li>
+<li><code>includeEquipped</code> (boolean, optional): Include equipped items. Default: <code>false</code>.</li>
+<li><code>includeMission</code> (boolean, optional): Include mission items. Default: <code>true</code>.</li>
+<li><strong>Returns</strong>: <code>transferredItems</code> (table) - A list of transferred stack records with:</li>
+<li><code>id</code> (number): Item class ID.</li>
+<li><code>count</code> (number): Transferred stack count.</li>
+<li><code>name</code> (string): Display name.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">chest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">findInteractive</span><span class="p">(</span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">resolve</span><span class="p">(</span><span class="s2">&quot;CHEST_01&quot;</span><span class="p">))</span><span class="w"> </span><span class="c1">-- Assuming &#39;world&#39; is available</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="kr">if</span><span class="w"> </span><span class="nv">chest</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">transferred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">player</span><span class="p">:</span><span class="nf">takeAllFrom</span><span class="p">(</span><span class="nv">chest</span><span class="p">:</span><span class="nf">inventory</span><span class="p">())</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="kr">for</span><span class="w"> </span><span class="nv">_</span><span class="p">,</span><span class="w"> </span><span class="nv">itemRecord</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nb">ipairs</span><span class="p">(</span><span class="nv">transferred</span><span class="p">)</span><span class="w"> </span><span class="kr">do</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">        </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Took &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">itemRecord</span><span class="p">.</span><span class="py">count</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s2">&quot;x &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">itemRecord</span><span class="p">.</span><span class="py">name</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s2">&quot; (id=&quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">itemRecord</span><span class="p">.</span><span class="py">id</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s2">&quot;)&quot;</span><span class="p">)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span><span class="kr">end</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="npcisinstanceinstancename"><code>npc:isInstance(instanceName)</code></h3>
+<p>Checks if this NPC matches a specific instance name. Uses <code>npc:instanceId()</code> and <code>opengothic.resolve()</code> primitives internally.</p>
+<ul>
+<li><code>instanceName</code> (string): The name of the instance to check (e.g., <code>"PC_HERO"</code>, <code>"GRD_200_GUARD"</code>).</li>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if this NPC's instance ID matches the resolved name.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nv">opengothic</span><span class="p">.</span><span class="py">events</span><span class="p">.</span><span class="nf">register</span><span class="p">(</span><span class="s2">&quot;onDialogStart&quot;</span><span class="p">,</span><span class="w"> </span><span class="kr">function</span><span class="p">(</span><span class="nv">npc</span><span class="p">,</span><span class="w"> </span><span class="nv">player</span><span class="p">)</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="nv">npc</span><span class="p">:</span><span class="nf">isInstance</span><span class="p">(</span><span class="s2">&quot;YOURSPECIALNPC&quot;</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">        </span><span class="c1">-- This is a specific NPC</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">        </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">printMessage</span><span class="p">(</span><span class="s2">&quot;You found the special NPC!&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="kr">end</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span><span class="kr">return</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="kr">end</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="npcissneaking"><code>npc:isSneaking()</code></h3>
+<p>Checks if this NPC is currently sneaking. Uses <code>npc:walkMode()</code> primitive internally.</p>
+<ul>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if the NPC is sneaking.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kr">if</span><span class="w"> </span><span class="nv">player</span><span class="p">:</span><span class="nf">isSneaking</span><span class="p">()</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Player is sneaking&quot;</span><span class="p">)</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="kr">end</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.annotation", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

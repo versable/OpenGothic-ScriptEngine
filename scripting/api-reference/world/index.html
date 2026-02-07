@@ -1,0 +1,3009 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Modding documentation for the OpenGothic Lua API.">
+      
+      
+      
+      
+        <link rel="prev" href="../constants/">
+      
+      
+        <link rel="next" href="../npc/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>World - OpenGothic Scripting</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#world-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="OpenGothic Scripting" class="md-header__button md-logo" aria-label="OpenGothic Scripting" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OpenGothic Scripting
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              World
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  Home
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../daedalus-bridge/" class="md-tabs__link">
+          
+  
+  
+  Daedalus Bridge
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OpenGothic Scripting" class="md-nav__button md-logo" aria-label="OpenGothic Scripting" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    OpenGothic Scripting
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Home
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/events-and-hooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Events and Hooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/lifecycles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VM Lifecycles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/your-first-mod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your First Mod
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/quickloot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickloot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/auto-pickup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auto Pickup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/creating-a-quest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating a Quest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/custom-damage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Damage Logic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/dialog-time-windows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dialog Time Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/tutorials/scavenger-flee/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cowardly Scavengers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../globals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Globals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Objects
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Objects
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    World
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    World
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#primitives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Primitives
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Primitives">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worldtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:time()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldistimestarthour-startmin-endhour-endmin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:isTime(startHour, startMin, endHour, endMin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldsetdaytimehour-minute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:setDayTime(hour, minute)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldday" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:day()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldaddnpcinstanceid-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:addNpc(instanceId, waypoint)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldaddnpcatinstanceid-x-y-z" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:addNpcAt(instanceId, x, y, z)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldremovenpcnpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:removeNpc(npc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldadditeminstanceid-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:addItem(instanceId, waypoint)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldadditematinstanceid-x-y-z" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:addItemAt(instanceId, x, y, z)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldremoveitemitem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:removeItem(item)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnpcinstanceid-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNpc(instanceId, [n])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfinditeminstanceid-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findItem(instanceId, [n])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindinteractiveinstanceid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findInteractive(instanceId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldplayer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:player()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldplaysoundsoundname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:playSound(soundName)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldplayeffecteffectname-x-y-z" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:playEffect(effectName, x, y, z)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldspelldescspellid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:spellDesc(spellId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnpcsinrangex-y-z-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNpcsInRange(x, y, z, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnpcsnearnpc-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNpcsNear(npc, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnearestnpcoriginnpc-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNearestNpc(originNpc, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worlddetectitemsinrangex-y-z-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:detectItemsInRange(x, y, z, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worlddetectitemsnearoriginnpc-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:detectItemsNear(originNpc, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnearestitemoriginnpc-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNearestItem(originNpc, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convenience-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenience Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convenience Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worldinsertnpcnpcname-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:insertNpc(npcName, waypoint)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldinsertitemitemname-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:insertItem(itemName, waypoint)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../npc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Npc
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../item/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Item
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interactive/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Namespaces
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Namespaces
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/quest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.quest
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/dialog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.dialog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/ai/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.ai
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/timer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.timer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.ui
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/world/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.worldutil
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/damage-calculator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.DamageCalculator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/sound/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.sound
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../helpers/effect/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    opengothic.effect
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Daedalus Bridge
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Daedalus Bridge
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/migration-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration Map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../daedalus-bridge/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#primitives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Primitives
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Primitives">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worldtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:time()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldistimestarthour-startmin-endhour-endmin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:isTime(startHour, startMin, endHour, endMin)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldsetdaytimehour-minute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:setDayTime(hour, minute)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldday" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:day()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldaddnpcinstanceid-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:addNpc(instanceId, waypoint)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldaddnpcatinstanceid-x-y-z" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:addNpcAt(instanceId, x, y, z)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldremovenpcnpc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:removeNpc(npc)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldadditeminstanceid-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:addItem(instanceId, waypoint)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldadditematinstanceid-x-y-z" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:addItemAt(instanceId, x, y, z)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldremoveitemitem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:removeItem(item)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnpcinstanceid-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNpc(instanceId, [n])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfinditeminstanceid-n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findItem(instanceId, [n])
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindinteractiveinstanceid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findInteractive(instanceId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldplayer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:player()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldplaysoundsoundname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:playSound(soundName)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldplayeffecteffectname-x-y-z" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:playEffect(effectName, x, y, z)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldspelldescspellid" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:spellDesc(spellId)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnpcsinrangex-y-z-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNpcsInRange(x, y, z, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnpcsnearnpc-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNpcsNear(npc, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnearestnpcoriginnpc-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNearestNpc(originNpc, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worlddetectitemsinrangex-y-z-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:detectItemsInRange(x, y, z, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worlddetectitemsnearoriginnpc-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:detectItemsNear(originNpc, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldfindnearestitemoriginnpc-range" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:findNearestItem(originNpc, range)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#convenience-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Convenience Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Convenience Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worldinsertnpcnpcname-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:insertNpc(npcName, waypoint)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worldinsertitemitemname-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        world:insertItem(itemName, waypoint)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="world-api">World API</h1>
+<p>The <code>World</code> object is the main entry point for interacting with the game world as a whole. You can get the current world object by calling <code>opengothic.world()</code>.</p>
+<hr />
+<h2 id="primitives">Primitives</h2>
+<p>These methods are implemented in C++ and provide direct access to world functionality. They use numeric IDs (from <code>opengothic.resolve()</code>) and do not call Daedalus functions.</p>
+<h3 id="worldtime"><code>world:time()</code></h3>
+<p>Gets the current in-game time.</p>
+<ul>
+<li><strong>Returns</strong>: <code>hour</code> (number), <code>minute</code> (number)</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">h</span><span class="p">,</span><span class="w"> </span><span class="nv">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">():</span><span class="nf">time</span><span class="p">()</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nv">opengothic</span><span class="p">.</span><span class="nf">printMessage</span><span class="p">(</span><span class="s2">&quot;Current time: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">h</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="s2">&quot;:&quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="worldistimestarthour-startmin-endhour-endmin"><code>world:isTime(startHour, startMin, endHour, endMin)</code></h3>
+<p>Checks if the current game time is within a specified range. Correctly handles overnight ranges (for example, <code>20:00</code> to <code>06:00</code>).</p>
+<ul>
+<li><code>startHour</code> (number): Start hour (0-23).</li>
+<li><code>startMin</code> (number): Start minute (0-59).</li>
+<li><code>endHour</code> (number): End hour (0-23).</li>
+<li><code>endMin</code> (number): End minute (0-59).</li>
+<li><strong>Returns</strong>: <code>boolean</code> - <code>true</code> if the current time is within the range (inclusive start, exclusive end).</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kr">if</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">isTime</span><span class="p">(</span><span class="mi">22</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;It&#39;s nighttime!&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worldsetdaytimehour-minute"><code>world:setDayTime(hour, minute)</code></h3>
+<p>Sets the current in-game time.</p>
+<ul>
+<li><code>hour</code> (number): The hour to set (0-23).</li>
+<li><code>minute</code> (number): The minute to set (0-59).</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">-- Set the time to midnight</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">():</span><span class="nf">setDayTime</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="worldday"><code>world:day()</code></h3>
+<p>Gets the current in-game day number.</p>
+<ul>
+<li><strong>Returns</strong>: <code>day</code> (number)</li>
+</ul>
+<hr />
+<h3 id="worldaddnpcinstanceid-waypoint"><code>world:addNpc(instanceId, waypoint)</code></h3>
+<p>Spawns an NPC at a specific waypoint.</p>
+<ul>
+<li><code>instanceId</code> (number): The instance ID of the NPC to spawn (use <code>opengothic.resolve()</code> to get this).</li>
+<li><code>waypoint</code> (string): The name of the waypoint to spawn the NPC at (e.g., <code>"WP_START"</code>).</li>
+<li><strong>Returns</strong>: The new <code>Npc</code> object, or <code>nil</code> if spawning failed.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">mudId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">resolve</span><span class="p">(</span><span class="s2">&quot;PC_MUD&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kr">if</span><span class="w"> </span><span class="nv">mudId</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="kd">local</span><span class="w"> </span><span class="nv">newMud</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">():</span><span class="nf">addNpc</span><span class="p">(</span><span class="nv">mudId</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;WP_CITY_CENTER&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="nv">newMud</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">        </span><span class="nv">newMud</span><span class="p">:</span><span class="nf">setAttitude</span><span class="p">(</span><span class="nv">opengothic</span><span class="p">.</span><span class="py">CONSTANTS</span><span class="p">.</span><span class="py">Attitude</span><span class="p">.</span><span class="py">ATT_FRIENDLY</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="kr">end</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worldaddnpcatinstanceid-x-y-z"><code>world:addNpcAt(instanceId, x, y, z)</code></h3>
+<p>Spawns an NPC at a specific world coordinate.</p>
+<ul>
+<li><code>instanceId</code> (number): The instance ID of the NPC.</li>
+<li><code>x</code>, <code>y</code>, <code>z</code> (numbers): The world coordinates.</li>
+<li><strong>Returns</strong>: The new <code>Npc</code> object, or <code>nil</code> if spawning failed.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">playerPos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">():</span><span class="nf">position</span><span class="p">()</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">wolfId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">resolve</span><span class="p">(</span><span class="s2">&quot;WOLF&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">-- Spawn a wolf 100 units in front of the player</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">():</span><span class="nf">addNpcAt</span><span class="p">(</span><span class="nv">wolfId</span><span class="p">,</span><span class="w"> </span><span class="nv">playerPos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nv">playerPos</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="nv">playerPos</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+</code></pre></div>
+<hr />
+<h3 id="worldremovenpcnpc"><code>world:removeNpc(npc)</code></h3>
+<p>Removes an NPC from the world.</p>
+<ul>
+<li><code>npc</code> (Npc): The NPC object to remove.</li>
+</ul>
+<hr />
+<h3 id="worldadditeminstanceid-waypoint"><code>world:addItem(instanceId, waypoint)</code></h3>
+<p>Spawns an item in the world at a specific waypoint.</p>
+<ul>
+<li><code>instanceId</code> (number): The instance ID of the item.</li>
+<li><code>waypoint</code> (string): The name of the waypoint.</li>
+<li><strong>Returns</strong>: The new <code>Item</code> object, or <code>nil</code> on failure.</li>
+</ul>
+<hr />
+<h3 id="worldadditematinstanceid-x-y-z"><code>world:addItemAt(instanceId, x, y, z)</code></h3>
+<p>Spawns an item at a specific world coordinate.</p>
+<ul>
+<li><code>instanceId</code> (number): The instance ID of the item.</li>
+<li><code>x</code>, <code>y</code>, <code>z</code> (numbers): The world coordinates.</li>
+<li><strong>Returns</strong>: The new <code>Item</code> object, or <code>nil</code> on failure.</li>
+</ul>
+<hr />
+<h3 id="worldremoveitemitem"><code>world:removeItem(item)</code></h3>
+<p>Removes an item from the world.</p>
+<ul>
+<li><code>item</code> (Item): The item object to remove.</li>
+</ul>
+<hr />
+<h3 id="worldfindnpcinstanceid-n"><code>world:findNpc(instanceId, [n])</code></h3>
+<p>Finds an NPC in the world by its instance ID.</p>
+<ul>
+<li><code>instanceId</code> (number): The instance ID to search for.</li>
+<li><code>n</code> (number, optional): The nth NPC to find (0-based). Defaults to 0. Useful if multiple NPCs have the same ID.</li>
+<li><strong>Returns</strong>: An <code>Npc</code> object, or <code>nil</code> if not found.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">laresId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">resolve</span><span class="p">(</span><span class="s2">&quot;PC_THIEF_LARES&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">lares</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">():</span><span class="nf">findNpc</span><span class="p">(</span><span class="nv">laresId</span><span class="p">)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kr">if</span><span class="w"> </span><span class="nv">lares</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="c1">-- Found him!</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worldfinditeminstanceid-n"><code>world:findItem(instanceId, [n])</code></h3>
+<p>Finds an item in the world by its instance ID.</p>
+<ul>
+<li><code>instanceId</code> (number): The instance ID to search for.</li>
+<li><code>n</code> (number, optional): The nth item to find (0-based). Defaults to 0.</li>
+<li><strong>Returns</strong>: An <code>Item</code> object, or <code>nil</code> if not found.</li>
+</ul>
+<hr />
+<h3 id="worldfindinteractiveinstanceid"><code>world:findInteractive(instanceId)</code></h3>
+<p>Finds an interactive object (mobsi) in the world by its instance ID.</p>
+<ul>
+<li><code>instanceId</code> (number): The instance ID to search for (e.g., <code>opengothic.resolve("MOBSI_CHEST_01")</code>).</li>
+<li><strong>Returns</strong>: An <code>Interactive</code> object, or <code>nil</code> if not found.</li>
+</ul>
+<hr />
+<h3 id="worldplayer"><code>world:player()</code></h3>
+<p>Gets the player's <code>Npc</code> object. This is a shortcut for <code>opengothic.player()</code>.</p>
+<ul>
+<li><strong>Returns</strong>: The player <code>Npc</code> object, or <code>nil</code>.</li>
+</ul>
+<hr />
+<h3 id="worldplaysoundsoundname"><code>world:playSound(soundName)</code></h3>
+<p>Plays a sound effect globally.</p>
+<ul>
+<li><code>soundName</code> (string): The name of the sound effect file (without extension).</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">-- Play a magic sound</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">():</span><span class="nf">playSound</span><span class="p">(</span><span class="s2">&quot;MFX_HEAL_HEAL&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="worldplayeffecteffectname-x-y-z"><code>world:playEffect(effectName, x, y, z)</code></h3>
+<p>Spawns a visual effect (VFX) at a specific world coordinate.</p>
+<ul>
+<li><code>effectName</code> (string): The name of the effect (e.g., <code>"SpellFx_Lightning"</code>).</li>
+<li><code>x</code>, <code>y</code>, <code>z</code> (numbers): The world coordinates to spawn the effect at.</li>
+</ul>
+<hr />
+<h3 id="worldspelldescspellid"><code>world:spellDesc(spellId)</code></h3>
+<p>Gets information about a spell.</p>
+<ul>
+<li><code>spellId</code> (number): The ID of the spell (from <code>item.clsId()</code> on a rune or scroll).</li>
+<li><strong>Returns</strong>: A table with spell properties, or <code>nil</code>.</li>
+<li><code>damagePerLevel</code> (number)</li>
+<li><code>damageType</code> (number)</li>
+<li><code>spellType</code> (number)</li>
+<li><code>timePerMana</code> (number)</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">fireboltId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">resolve</span><span class="p">(</span><span class="s2">&quot;ITRU_FIREBOLT&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">spellInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">():</span><span class="nf">spellDesc</span><span class="p">(</span><span class="nv">fireboltId</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="kr">if</span><span class="w"> </span><span class="nv">spellInfo</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Firebolt damage type: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">spellInfo</span><span class="p">.</span><span class="py">damageType</span><span class="p">)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worldfindnpcsinrangex-y-z-range"><code>world:findNpcsInRange(x, y, z, range)</code></h3>
+<p>Finds all NPCs within a specified radius of a world coordinate.</p>
+<ul>
+<li><code>x</code>, <code>y</code>, <code>z</code> (numbers): The center point coordinates.</li>
+<li><code>range</code> (number): The search radius in world units.</li>
+<li><strong>Returns</strong>: A table (array) of <code>Npc</code> objects found within range. Returns an empty table if none found. Note: Any NPC at the exact center point (distance = 0) is included.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">px</span><span class="p">,</span><span class="w"> </span><span class="nv">py</span><span class="p">,</span><span class="w"> </span><span class="nv">pz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">():</span><span class="nf">position</span><span class="p">()</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1">-- Find all NPCs within 1000 units of the player</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="kd">local</span><span class="w"> </span><span class="nv">nearbyNpcs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">findNpcsInRange</span><span class="p">(</span><span class="nv">px</span><span class="p">,</span><span class="w"> </span><span class="nv">py</span><span class="p">,</span><span class="w"> </span><span class="nv">pz</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="kr">for</span><span class="w"> </span><span class="nv">_</span><span class="p">,</span><span class="w"> </span><span class="nv">npc</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nb">ipairs</span><span class="p">(</span><span class="nv">nearbyNpcs</span><span class="p">)</span><span class="w"> </span><span class="kr">do</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Nearby: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">npc</span><span class="p">:</span><span class="nf">displayName</span><span class="p">())</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worldfindnpcsnearnpc-range"><code>world:findNpcsNear(npc, range)</code></h3>
+<p>Finds all NPCs within a specified radius of another NPC.</p>
+<ul>
+<li><code>npc</code> (Npc): The NPC to search around.</li>
+<li><code>range</code> (number): The search radius in world units.</li>
+<li><strong>Returns</strong>: A table (array) of <code>Npc</code> objects found within range. Note: The center <code>npc</code> itself is included in the results (distance = 0).</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="kd">local</span><span class="w"> </span><span class="nv">nearby</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">findNpcsNear</span><span class="p">(</span><span class="nv">player</span><span class="p">,</span><span class="w"> </span><span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="kr">for</span><span class="w"> </span><span class="nv">_</span><span class="p">,</span><span class="w"> </span><span class="nv">npc</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nb">ipairs</span><span class="p">(</span><span class="nv">nearby</span><span class="p">)</span><span class="w"> </span><span class="kr">do</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">npc</span><span class="p">:</span><span class="nf">isPlayer</span><span class="p">()</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">        </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">npc</span><span class="p">:</span><span class="nf">displayName</span><span class="p">())</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">    </span><span class="kr">end</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worldfindnearestnpcoriginnpc-range"><code>world:findNearestNpc(originNpc, range)</code></h3>
+<p>Finds the nearest NPC around an origin NPC.</p>
+<ul>
+<li><code>originNpc</code> (Npc): The NPC used as search center.</li>
+<li><code>range</code> (number): Search radius in world units.</li>
+<li><strong>Returns</strong>: The nearest <code>Npc</code>, or <code>nil</code> if none is found.</li>
+</ul>
+<p>Notes:
+- The <code>originNpc</code> itself is excluded from results.
+- Returns <code>nil</code> for invalid inputs (for example <code>range &lt;= 0</code>).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="kd">local</span><span class="w"> </span><span class="nv">nearest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">findNearestNpc</span><span class="p">(</span><span class="nv">player</span><span class="p">,</span><span class="w"> </span><span class="mi">1500</span><span class="p">)</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="kr">if</span><span class="w"> </span><span class="nv">nearest</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Nearest NPC: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">nearest</span><span class="p">:</span><span class="nf">displayName</span><span class="p">())</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worlddetectitemsinrangex-y-z-range"><code>world:detectItemsInRange(x, y, z, range)</code></h3>
+<p>Finds all world items within a specified radius of a world coordinate.</p>
+<ul>
+<li><code>x</code>, <code>y</code>, <code>z</code> (numbers): The center point coordinates.</li>
+<li><code>range</code> (number): The search radius in world units.</li>
+<li><strong>Returns</strong>: A table (array) of <code>Item</code> objects found within range. Returns an empty table for invalid inputs or when no item is found.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">px</span><span class="p">,</span><span class="w"> </span><span class="nv">py</span><span class="p">,</span><span class="w"> </span><span class="nv">pz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">():</span><span class="nf">position</span><span class="p">()</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="kd">local</span><span class="w"> </span><span class="nv">nearbyItems</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">detectItemsInRange</span><span class="p">(</span><span class="nv">px</span><span class="p">,</span><span class="w"> </span><span class="nv">py</span><span class="p">,</span><span class="w"> </span><span class="nv">pz</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="kr">for</span><span class="w"> </span><span class="nv">_</span><span class="p">,</span><span class="w"> </span><span class="nv">item</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nb">ipairs</span><span class="p">(</span><span class="nv">nearbyItems</span><span class="p">)</span><span class="w"> </span><span class="kr">do</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Nearby item: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">item</span><span class="p">:</span><span class="nf">displayName</span><span class="p">())</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worlddetectitemsnearoriginnpc-range"><code>world:detectItemsNear(originNpc, range)</code></h3>
+<p>Finds all world items around an origin NPC.</p>
+<ul>
+<li><code>originNpc</code> (Npc): The NPC used as search center.</li>
+<li><code>range</code> (number): Search radius in world units.</li>
+<li><strong>Returns</strong>: A table (array) of <code>Item</code> objects found within range. Returns an empty table for invalid inputs.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="kr">for</span><span class="w"> </span><span class="nv">_</span><span class="p">,</span><span class="w"> </span><span class="nv">item</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nb">ipairs</span><span class="p">(</span><span class="nv">world</span><span class="p">:</span><span class="nf">detectItemsNear</span><span class="p">(</span><span class="nv">player</span><span class="p">,</span><span class="w"> </span><span class="mi">800</span><span class="p">))</span><span class="w"> </span><span class="kr">do</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Detected item: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">item</span><span class="p">:</span><span class="nf">displayName</span><span class="p">())</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worldfindnearestitemoriginnpc-range"><code>world:findNearestItem(originNpc, range)</code></h3>
+<p>Finds the nearest world item around an origin NPC.</p>
+<ul>
+<li><code>originNpc</code> (Npc): The NPC used as search center.</li>
+<li><code>range</code> (number): Search radius in world units.</li>
+<li><strong>Returns</strong>: The nearest <code>Item</code>, or <code>nil</code> if none is found.</li>
+</ul>
+<p>Notes:
+- Returns <code>nil</code> for invalid inputs (for example <code>range &lt;= 0</code>).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">player</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">player</span><span class="p">()</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="kd">local</span><span class="w"> </span><span class="nv">nearestItem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">findNearestItem</span><span class="p">(</span><span class="nv">player</span><span class="p">,</span><span class="w"> </span><span class="mi">1200</span><span class="p">)</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="kr">if</span><span class="w"> </span><span class="nv">nearestItem</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Nearest item: &quot;</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">nearestItem</span><span class="p">:</span><span class="nf">displayName</span><span class="p">())</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h2 id="convenience-methods">Convenience Methods</h2>
+<p>These methods are defined in <code>bootstrap.lua</code> and wrap world primitives with symbol-name resolution.</p>
+<h3 id="worldinsertnpcnpcname-waypoint"><code>world:insertNpc(npcName, waypoint)</code></h3>
+<p>Spawns an NPC at a waypoint using a symbol name instead of a resolved ID.</p>
+<ul>
+<li><code>npcName</code> (string): The name of the NPC instance (e.g., <code>"PC_HERO"</code>).</li>
+<li><code>waypoint</code> (string): The name of the waypoint.</li>
+<li><strong>Returns</strong>: The new <code>Npc</code> object, or <code>nil</code> if spawning failed.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">newNpc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">insertNpc</span><span class="p">(</span><span class="s2">&quot;GRD_200_GUARD&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;WP_CITY_GATE&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="kr">if</span><span class="w"> </span><span class="nv">newNpc</span><span class="w"> </span><span class="kr">then</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Spawned guard at city gate&quot;</span><span class="p">)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="kr">end</span>
+</code></pre></div>
+<hr />
+<h3 id="worldinsertitemitemname-waypoint"><code>world:insertItem(itemName, waypoint)</code></h3>
+<p>Spawns an item at a waypoint using a symbol name instead of a resolved ID.</p>
+<ul>
+<li><code>itemName</code> (string): The name of the item instance (e.g., <code>"ITMI_GOLD"</code>).</li>
+<li><code>waypoint</code> (string): The name of the waypoint.</li>
+<li><strong>Returns</strong>: The new <code>Item</code> object, or <code>nil</code> if spawning failed.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kd">local</span><span class="w"> </span><span class="nv">world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">opengothic</span><span class="p">.</span><span class="nf">world</span><span class="p">()</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kd">local</span><span class="w"> </span><span class="nv">goldPile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">world</span><span class="p">:</span><span class="nf">insertItem</span><span class="p">(</span><span class="s2">&quot;ITMI_GOLD&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;WP_TREASURE_SPOT&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<p>See also: <a href="../helpers/world/"><code>opengothic.worldutil</code></a> for namespace-level world query wrappers.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.annotation", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
