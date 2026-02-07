@@ -1,0 +1,87 @@
+
+docs_dir: content
+
+site_name: OpenGothic Scripting
+site_description: 'Modding documentation for the OpenGothic Lua API.'
+theme:
+  name: material
+  palette:
+    # Palette toggle for light vs dark mode
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.annotation
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - sane_lists
+  - admonition
+
+nav:
+  - 'Home':
+    - 'Overview': 'index.md'
+    - 'Core Concepts':
+      - 'Architecture': 'concepts/architecture.md'
+      - 'Events and Hooks': 'concepts/events-and-hooks.md'
+      - 'VM Lifecycles': 'concepts/lifecycles.md'
+  - 'Getting Started':
+    - 'Introduction': 'getting-started/index.md'
+    - 'Tutorials':
+      - 'Your First Mod': 'getting-started/tutorials/your-first-mod.md'
+      - 'Quickloot': 'getting-started/tutorials/quickloot.md'
+      - 'Auto Pickup': 'getting-started/tutorials/auto-pickup.md'
+      - 'Creating a Quest': 'getting-started/tutorials/creating-a-quest.md'
+      - 'Custom Damage Logic': 'getting-started/tutorials/custom-damage.md'
+      - 'Dialog Time Windows': 'getting-started/tutorials/dialog-time-windows.md'
+      - 'Cowardly Scavengers': 'getting-started/tutorials/scavenger-flee.md'
+  - 'API Reference':
+    - 'Overview': 'api-reference/index.md'
+    - 'Core':
+      - 'Globals': 'api-reference/globals.md'
+      - 'Events': 'api-reference/events.md'
+      - 'Storage': 'api-reference/storage.md'
+      - 'Constants': 'api-reference/constants.md'
+    - 'Objects':
+      - 'World': 'api-reference/world.md'
+      - 'Npc': 'api-reference/npc.md'
+      - 'Item': 'api-reference/item.md'
+      - 'Inventory': 'api-reference/inventory.md'
+      - 'Interactive': 'api-reference/interactive.md'
+    - 'Namespaces':
+      - 'opengothic.quest': 'api-reference/helpers/quest.md'
+      - 'opengothic.dialog': 'api-reference/helpers/dialog.md'
+      - 'opengothic.ai': 'api-reference/helpers/ai.md'
+      - 'opengothic.timer': 'api-reference/helpers/timer.md'
+      - 'opengothic.ui': 'api-reference/helpers/ui.md'
+      - 'opengothic.inventory': 'api-reference/helpers/inventory.md'
+      - 'opengothic.worldutil': 'api-reference/helpers/world.md'
+      - 'opengothic.DamageCalculator': 'api-reference/helpers/damage-calculator.md'
+      - 'opengothic.sound': 'api-reference/helpers/sound.md'
+      - 'opengothic.effect': 'api-reference/helpers/effect.md'
+  - 'Daedalus Bridge':
+    - 'Overview': 'daedalus-bridge/index.md'
+    - 'Contracts': 'daedalus-bridge/contracts.md'
+    - 'Internals': 'daedalus-bridge/internals.md'
+    - 'Migration Map': 'daedalus-bridge/migration-map.md'
+    - 'Recipes': 'daedalus-bridge/recipes.md'
+    - 'Troubleshooting': 'daedalus-bridge/troubleshooting.md'
